@@ -166,7 +166,7 @@ export default function SafetyPage() {
                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Real-time Safety Monitoring</p>
               </div>
            </div>
-           <div className="relative w-full md:w-96">
+           <div className="relative w-full md:w-96 no-print">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" size={18} />
             <input 
               type="text" 
