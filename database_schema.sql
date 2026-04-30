@@ -238,3 +238,11 @@ INSERT INTO purchase_orders (po_number, vendor_id, order_date, total_amount, sta
 ('PO-2026-002', 2, '2026-04-15', 12500000.00, 'Ordered'),
 ('PO-2026-003', 3, '2026-04-20', 85000000.00, 'Draft');
 
+-- Sample Data for Users
+INSERT INTO users (username, full_name, role, department) VALUES
+('adi_admin', 'Adi Rahman Samari', 'ADMIN', 'MANAGEMENT'),
+('budi_ops', 'Budi Santoso', 'EXECUTIVE', 'SITE OPERATIONS'),
+('agus_fix', 'Agus Mekanik', 'TECHNICIAN', 'MAINTENANCE'),
+('siti_hse', 'Siti Safety', 'HSE', 'SAFETY'),
+('indra_ops', 'Indra Operator', 'OPERATOR', 'PRODUCTION');
+
