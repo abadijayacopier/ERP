@@ -16,7 +16,9 @@ import {
   Database,
   Calendar,
   Box,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Download,
+  Printer
 } from "lucide-react";
 import { clsx } from "clsx";
 import { apiRequest } from "@/lib/api-client";
@@ -168,36 +170,77 @@ export default function MonitoringPage() {
                       className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-white placeholder:text-slate-600 focus:outline-none focus:border-accent/40 focus:bg-white/[0.08] transition-all uppercase tracking-widest"
                     />
                   </div>
-                  <button 
-                    onClick={fetchKpiData} 
-                    disabled={loading}
-                    className="px-6 py-3 rounded-xl bg-white/5 text-slate-400 hover:text-white flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 shrink-0 disabled:opacity-50"
-                  >
-                    <RefreshCw size={14} className={clsx(loading && "animate-spin text-accent")} /> 
-                    {loading ? "Syncing..." : "Sync Database"}
-                  </button>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => {
+                        // Simple CSV Export Logic
+                        const headers = ["No", "Unit ID", "Model", "HM Start", "HM Finish", "Work", "Accident", "Wet", "Standby", "Wait Part", "PA%", "MA%", "UA%", "EU%"];
+                        const rows = filteredFleet.map((u: any, i: number) => [
+                          i + 1, u.id, u.model, u.awal_bulan, u.hm_running, u.work_hours, 
+                          u.accident_hours, u.wet_hours, u.standby_hours, u.wait_part_hours,
+                          u.pa, u.ma, u.ua, u.eu
+                        ]);
+                        const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.setAttribute("download", `Mega_Summary_${new Date().toLocaleDateString()}.csv`);
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                      className="px-4 py-3 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all border border-emerald-500/20 shrink-0"
+                    >
+                      <Download size={14} /> Export
+                    </button>
+                    <button 
+                      onClick={() => window.print()}
+                      className="px-4 py-3 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all border border-blue-500/20 shrink-0"
+                    >
+                      <Printer size={14} /> Print
+                    </button>
+                    <button 
+                      onClick={fetchKpiData} 
+                      disabled={loading}
+                      className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white transition-all border border-white/10 shrink-0 disabled:opacity-50"
+                    >
+                      <RefreshCw size={14} className={clsx(loading && "animate-spin text-accent")} />
+                    </button>
+                  </div>
                 </div>
              </div>
 
              <div className="overflow-x-auto w-full custom-scrollbar max-h-[650px] border-b border-white/5">
-               <style jsx>{`
-                 .custom-scrollbar::-webkit-scrollbar {
-                   height: 14px;
-                   display: block !important;
-                 }
-                 .custom-scrollbar::-webkit-scrollbar-track {
-                   background: rgba(255, 255, 255, 0.05);
-                   border-radius: 10px;
-                 }
-                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                   background: #facc15;
-                   border-radius: 10px;
-                   border: 3px solid #0b0f1a;
-                 }
-                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                   background: #eab308;
-                 }
-               `}</style>
+                <style jsx>{`
+                  .custom-scrollbar::-webkit-scrollbar {
+                    height: 14px;
+                    display: block !important;
+                  }
+                  .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 10px;
+                  }
+                  .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: #facc15;
+                    border-radius: 10px;
+                    border: 3px solid #0b0f1a;
+                  }
+                  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: #eab308;
+                  }
+                  @media print {
+                    @page { size: A3 landscape; margin: 10mm; }
+                    aside, header, footer, button, .no-print, .pagination-controls, .search-box { display: none !important; }
+                    main, .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; background: white !important; }
+                    .glass-card { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; color: black !important; }
+                    table { color: black !important; width: 100% !important; min-width: 100% !important; border-collapse: collapse !important; font-size: 7pt !important; }
+                    th { background: #f2f2f2 !important; color: black !important; border: 0.5pt solid #000 !important; -webkit-print-color-adjust: exact; }
+                    td { border: 0.5pt solid #ccc !important; color: black !important; background: white !important; }
+                    .sticky { position: static !important; }
+                    .text-white { color: black !important; }
+                    .text-slate-400, .text-slate-500 { color: #666 !important; }
+                  }
+                `}</style>
                <table className="text-left border-collapse min-w-[3000px] bg-black/20">
                <thead className="sticky top-0 z-20">
                  <tr className="bg-[#facc15]">

@@ -11,10 +11,19 @@ export async function apiRequest(endpoint: string, method = 'GET', body?: any) {
   }
 
   const response = await fetch(`/api/${endpoint}`, options);
-  const result = await response.json();
+  
+  const text = await response.text();
+  if (!text) return null;
+
+  let result;
+  try {
+    result = JSON.parse(text);
+  } catch (e) {
+    throw new Error(`Invalid JSON response from ${endpoint}`);
+  }
 
   if (!result.success) {
-    throw new Error(result.error?.message || 'Something went wrong');
+    throw new Error(result.error?.message || result.message || 'Something went wrong');
   }
 
   return result.data;

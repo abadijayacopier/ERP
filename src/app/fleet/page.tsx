@@ -51,6 +51,12 @@ export default function FleetPage() {
   const [selectedUnit, setSelectedUnit] = useState<any>(null);
   const [editingUnit, setEditingUnit] = useState<any>(null);
   const [showToast, setShowToast] = useState<{msg: string, type: "success" | "error"} | null>(null);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(fleet.length / itemsPerPage);
+  const currentData = fleet.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const [formData, setFormData] = useState({
     unit_id: "",
@@ -195,7 +201,7 @@ export default function FleetPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {fleet.map((unit) => (
+                  {currentData.map((unit) => (
                     <tr key={unit.id} className="group hover:bg-white/[0.03] transition-all">
                       <td className="px-8 py-8">
                         <div className="flex items-center gap-4">
@@ -254,24 +260,126 @@ export default function FleetPage() {
                 </tbody>
               </table>
            </div>
+
+           {/* PAGINATION UI */}
+           <div className="p-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6 bg-white/[0.01]">
+              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                Showing <span className="text-white">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-white">{Math.min(currentPage * itemsPerPage, fleet.length)}</span> of <span className="text-white">{fleet.length}</span> Assets
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight size={18} className="rotate-180" />
+                </button>
+                
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={clsx(
+                        "w-10 h-10 rounded-xl text-[10px] font-black transition-all border",
+                        currentPage === page 
+                          ? "bg-accent text-primary border-accent shadow-lg shadow-accent/20" 
+                          : "bg-white/5 text-slate-400 border-white/10 hover:border-white/20 hover:text-white"
+                      )}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+           </div>
         </div>
 
         <div className="space-y-8">
           <div className="glass-card p-10 bg-gradient-to-br from-accent/5 to-transparent relative overflow-hidden group border-accent/20">
              <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:rotate-12 transition-transform duration-700"><Compass size={120} /></div>
              <h3 className="font-black text-xl font-outfit text-white tracking-tight mb-8">Asset Radar Map</h3>
-             <div className="aspect-square bg-primary/40 border border-white/10 rounded-3xl relative overflow-hidden p-4 grid grid-cols-5 grid-rows-5 gap-2">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(0,255,170,0.05),transparent)]"></div>
+             <div className="aspect-square bg-primary/40 border border-white/10 rounded-3xl relative overflow-hidden p-4">
+                {/* Radar Sweeper Animation */}
+                <div className="absolute inset-0 bg-[conic-gradient(from_0deg,transparent_0deg,rgba(250,204,21,0.2)_30deg,transparent_60deg)] animate-[spin_4s_linear_infinite] origin-center z-10" />
+                
+                {/* Radar Grid */}
+                <div className="absolute inset-0 opacity-20" 
+                  style={{ 
+                    backgroundImage: 'radial-gradient(circle, #facc15 1px, transparent 1px), linear-gradient(to right, #ffffff11 1px, transparent 1px), linear-gradient(to bottom, #ffffff11 1px, transparent 1px)',
+                    backgroundSize: '100% 100%, 20% 20%, 20% 20%'
+                  }} 
+                />
+                <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                   <div className="w-full h-full border border-white/20 rounded-full" />
+                   <div className="absolute w-[66%] h-[66%] border border-white/20 rounded-full" />
+                   <div className="absolute w-[33%] h-[33%] border border-white/20 rounded-full" />
+                </div>
+
+                {/* Fleet Pings (Dynamic) */}
+                <div className="relative w-full h-full z-20">
+                   {fleet.map((unit, idx) => (
+                     <div 
+                       key={unit.id}
+                       className="absolute transition-all duration-1000"
+                       style={{ 
+                         left: `${20 + (idx * 15) % 70}%`, 
+                         top: `${15 + (idx * 12) % 70}%` 
+                       }}
+                     >
+                       <div className={clsx(
+                         "w-3 h-3 rounded-full shadow-[0_0_15px_rgba(var(--ping-color),0.5)] animate-pulse",
+                         unit.status === 'Running' ? "bg-emerald-500 [--ping-color:16,185,129]" : 
+                         unit.status === 'Standby' ? "bg-yellow-500 [--ping-color:234,179,8]" : "bg-red-500 [--ping-color:239,68,68]"
+                       )} />
+                       <span className="absolute left-4 top-0 text-[7px] font-black text-white whitespace-nowrap bg-black/60 px-1 rounded uppercase tracking-tighter">
+                         {unit.unit_id}
+                       </span>
+                     </div>
+                   ))}
+                </div>
              </div>
-             <p className="text-[10px] text-slate-500 font-black uppercase mt-6 text-center tracking-widest animate-pulse">Live Visual Positioning Active</p>
+             <p className="text-[10px] text-slate-500 font-black uppercase mt-6 text-center tracking-widest animate-pulse flex items-center justify-center gap-2">
+               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+               Satellite Positioning Active
+             </p>
           </div>
 
           <div className="glass-card p-10 bg-white/[0.02]">
              <h3 className="font-black text-xl font-outfit text-white tracking-tight mb-6">Action Quick-Sync</h3>
              <div className="space-y-3">
-                <button className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3"><Gauge size={16}/> Bulk HM Update</button>
-                <button className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3"><MapPin size={16}/> Re-Zone Fleet</button>
-                <button className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3 text-red-400"><ShieldAlert size={16}/> Emergency Stop All</button>
+                <button 
+                  onClick={() => setShowToast({ msg: "Initializing Mass HM Calibration Sequence...", type: "success" })}
+                  className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+                >
+                  <Gauge size={16} className="group-hover:rotate-12 transition-transform"/> Bulk HM Update
+                </button>
+                <button 
+                  onClick={() => setShowToast({ msg: "Recalculating Operational Zones via Satellite...", type: "success" })}
+                  className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest hover:bg-white/10 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+                >
+                  <MapPin size={16} className="group-hover:bounce transition-transform"/> Re-Zone Fleet
+                </button>
+                <button 
+                  onClick={async () => {
+                    const res = await showAlert("EMERGENCY PROTOCOL", "Executing Global Shutdown for ALL active units. Confirm Authorization?", "warning");
+                    if (res) {
+                      setShowToast({ msg: "Emergency Signal Transmitted to All Site Nodes", type: "error" });
+                    }
+                  }}
+                  className="w-full py-4 rounded-2xl bg-red-500/5 border border-red-500/20 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/10 transition-all flex items-center justify-center gap-3 text-red-400 active:scale-95 group"
+                >
+                  <ShieldAlert size={16} className="animate-pulse"/> Emergency Stop All
+                </button>
              </div>
           </div>
         </div>

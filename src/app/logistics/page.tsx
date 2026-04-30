@@ -50,6 +50,11 @@ export default function LogisticsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showToast, setShowToast] = useState<{msg: string, type: "success" | "error"} | null>(null);
+  
+  // Search & Pagination State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -143,7 +148,18 @@ export default function LogisticsPage() {
       setShowToast({ msg: err.message, type: "error" });
     }
   };
+  // Filter & Pagination Logic
+  const filteredLogs = logs.filter(log => 
+    log.reference_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.transaction_type?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       {showToast && <Toast message={showToast.msg} type={showToast.type} onClose={() => setShowToast(null)} />}
@@ -200,9 +216,18 @@ export default function LogisticsPage() {
       <section className="glass-card overflow-hidden group">
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
           <h3 className="font-bold text-lg font-outfit text-white tracking-tight">Transaction History</h3>
-          <div className="relative w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16} />
-            <input type="text" placeholder="Search ref id / operator..." className="form-input !py-2 !pl-10 !text-xs" />
+          <div className="relative w-72 group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-accent transition-colors" size={16} />
+            <input 
+              type="text" 
+              placeholder="Search ref id / operator..." 
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="form-input !py-2 !pl-10 !text-[10px] font-black uppercase tracking-widest placeholder:text-slate-600 focus:border-accent/40 transition-all" 
+            />
           </div>
         </div>
         
@@ -222,12 +247,12 @@ export default function LogisticsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {logs.length === 0 ? (
+                {paginatedLogs.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-8 py-20 text-center text-slate-500 italic opacity-30 uppercase text-[10px] font-black tracking-widest">No logistics records found</td>
                   </tr>
                 ) : (
-                  logs.map((tx) => (
+                  paginatedLogs.map((tx) => (
                     <tr key={tx.id} className="hover:bg-white/5 transition-all group/row">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-3">
@@ -277,6 +302,58 @@ export default function LogisticsPage() {
               </tbody>
             </table>
           )}
+        </div>
+
+        {/* PAGINATION UI */}
+        <div className="p-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6 bg-white/[0.01]">
+          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+            Showing <span className="text-white">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-white">{Math.min(currentPage * itemsPerPage, filteredLogs.length)}</span> of <span className="text-white">{filteredLogs.length}</span> Logistics Records
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronRight className="rotate-180" size={18} />
+            </button>
+            
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum = i + 1;
+                if (totalPages > 5 && currentPage > 3) {
+                  pageNum = currentPage - 2 + i;
+                  if (pageNum + 2 > totalPages) pageNum = totalPages - 4 + i;
+                }
+                if (pageNum < 1) pageNum = 1;
+                if (pageNum > totalPages) return null;
+                
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={clsx(
+                      "w-10 h-10 rounded-xl text-[10px] font-black transition-all border",
+                      currentPage === pageNum 
+                        ? "bg-accent text-primary border-accent shadow-lg shadow-accent/20" 
+                        : "bg-white/5 text-slate-400 border-white/10 hover:border-white/20 hover:text-white"
+                    )}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button 
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </section>
 

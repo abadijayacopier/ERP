@@ -24,7 +24,10 @@ import {
   Trash2,
   X,
   Save,
-  UserPlus
+  UserPlus,
+  ChevronRight,
+  ChevronLeft,
+  Database
 } from "lucide-react";
 import { clsx } from "clsx";
 import { Modal, Toast } from "@/components/UIFeedback";
@@ -38,6 +41,11 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<any[]>([]);
   const [showToast, setShowToast] = useState<{msg: string, type: "success" | "error"} | null>(null);
+  
+  // Search & Pagination State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   
   // Personnel Modal State
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -156,6 +164,19 @@ export default function SettingsPage() {
     { id: "Integrations", icon: Terminal, label: "Integrations" },
   ];
 
+  // Search & Filter Logic
+  const filteredUsers = users.filter(user => 
+    user.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.role.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = filteredUsers.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <div className="space-y-10 animate-in fade-in duration-700 pb-20">
       {showToast && (
@@ -197,13 +218,30 @@ export default function SettingsPage() {
                   <div className="p-3 rounded-2xl bg-accent/20 text-accent"><Users size={24} /></div>
                   <h3 className="text-xl font-black font-outfit text-white">Personnel Directory</h3>
                 </div>
-                <button 
-                  onClick={openAddUser}
-                  className="px-6 py-3 rounded-2xl bg-accent text-primary font-black text-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-accent/20"
-                >
-                  <UserPlus size={16} />
-                  ADD PERSONNEL
-                </button>
+                <div className="flex flex-col md:flex-row gap-4 items-center">
+                  <div className="relative group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-accent transition-colors">
+                      <Layout size={14} className="rotate-90" />
+                    </div>
+                    <input 
+                      type="text"
+                      placeholder="Search Personnel..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="bg-white/5 border border-white/10 rounded-2xl py-3 pl-10 pr-4 text-xs font-bold text-white placeholder:text-slate-600 focus:outline-none focus:border-accent/40 focus:bg-white/[0.08] transition-all uppercase tracking-widest w-64"
+                    />
+                  </div>
+                  <button 
+                    onClick={openAddUser}
+                    className="px-6 py-3 rounded-2xl bg-accent text-primary font-black text-xs hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-lg shadow-accent/20"
+                  >
+                    <UserPlus size={16} />
+                    ADD PERSONNEL
+                  </button>
+                </div>
               </div>
 
               <div className="glass-card overflow-hidden">
@@ -216,7 +254,7 @@ export default function SettingsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {users.map((user) => (
+                    {paginatedUsers.map((user) => (
                       <tr key={user.id} className="group hover:bg-white/[0.02]">
                         <td className="p-6">
                           <div className="flex items-center gap-4">
@@ -242,6 +280,48 @@ export default function SettingsPage() {
                     ))}
                   </tbody>
                 </table>
+                
+                {/* PAGINATION UI */}
+                <div className="p-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6 bg-white/[0.01]">
+                  <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                    Record <span className="text-white">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-white">{Math.min(currentPage * itemsPerPage, filteredUsers.length)}</span> of <span className="text-white">{filteredUsers.length}</span> Active Personnel
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronLeft size={18} />
+                    </button>
+                    
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={clsx(
+                            "w-10 h-10 rounded-xl text-[10px] font-black transition-all border",
+                            currentPage === page 
+                              ? "bg-accent text-primary border-accent shadow-lg shadow-accent/20" 
+                              : "bg-white/5 text-slate-400 border-white/10 hover:border-white/20 hover:text-white"
+                          )}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button 
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage === totalPages || totalPages === 0}
+                      className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    >
+                      <ChevronRight size={18} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -411,8 +491,24 @@ export default function SettingsPage() {
                 <StatusRow label="Latency" value={systemStats.dbLatency} progress={20} color="bg-green-500" />
                 <StatusRow label="Util" value={`${systemStats.serverUtil}%`} progress={systemStats.serverUtil} color="bg-blue-500" />
               </div>
-              <div className="pt-4 border-t border-white/5">
-                 <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Version: {systemStats.version}</p>
+              <div className="pt-4 border-t border-white/5 space-y-6">
+                 <div>
+                   <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4">Live Site Activity</p>
+                   <div className="space-y-3">
+                      <ActivityEvent icon={ShieldCheck} label="Firewall Active" time="NOW" color="text-emerald-500" />
+                      <ActivityEvent icon={Users} label="Personnel Sync" time="2m ago" color="text-blue-500" />
+                      <ActivityEvent icon={Database} label="Logistics Backup" time="14m ago" color="text-slate-500" />
+                   </div>
+                 </div>
+
+                 <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 font-mono text-[9px] text-slate-500 overflow-hidden relative">
+                    <div className="absolute top-0 right-0 p-2 opacity-20"><Terminal size={14} /></div>
+                    <p className="text-accent font-black mb-1 tracking-tighter">SITE_ID: ABADIJAYA-S-001</p>
+                    <p className="truncate">AUTH_TOKEN: 7fb...91a2</p>
+                    <p className="text-[8px] mt-2 opacity-40">SYSTEM READY: ALL MODULES NOMINAL</p>
+                 </div>
+
+                 <p className="text-[10px] font-black text-slate-700 uppercase tracking-widest">Build Version: {systemStats.version}</p>
               </div>
             </div>
           </div>
@@ -564,6 +660,20 @@ function StatusRow({ label, value, progress, color }: any) {
       <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
         <div className={clsx("h-full rounded-full", color)} style={{ width: `${progress}%` }} />
       </div>
+    </div>
+  );
+}
+
+function ActivityEvent({ icon: Icon, label, time, color }: any) {
+  return (
+    <div className="flex items-center justify-between group/event">
+       <div className="flex items-center gap-3">
+          <div className={clsx("p-1.5 rounded-lg bg-white/5 transition-colors group-hover/event:bg-white/10", color)}>
+             <Icon size={12} />
+          </div>
+          <span className="text-[10px] font-bold text-slate-300 group-hover/event:text-white transition-colors">{label}</span>
+       </div>
+       <span className="text-[9px] font-black text-slate-600 italic tracking-widest">{time}</span>
     </div>
   );
 }

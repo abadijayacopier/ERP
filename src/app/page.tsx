@@ -146,17 +146,28 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="mt-8 flex items-end justify-between gap-4 h-48 relative">
+          <div className="mt-8 flex items-end justify-between gap-6 h-64 relative px-2">
             {chartData[timeRange].map((h, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-4 group/bar">
-                <div 
-                  className={clsx(
-                    "w-full rounded-2xl transition-all duration-700 relative",
-                    h > 70 ? "bg-accent shadow-[0_0_25px_rgba(var(--accent-rgb),0.3)]" : "bg-white/10"
-                  )}
-                  style={{ height: `${h}%` }}
-                ></div>
-                <span className="text-[9px] font-black text-slate-600 group-hover/bar:text-slate-400 transition-colors uppercase">
+              <div key={i} className="flex-1 flex flex-col items-center gap-6 h-full justify-end group/bar relative">
+                {/* Value Tooltip on Hover */}
+                <div className="absolute -top-10 opacity-0 group-hover/bar:opacity-100 transition-all bg-accent text-primary px-2 py-1 rounded text-[10px] font-black z-20">
+                  {h}%
+                </div>
+                
+                <div className="w-full bg-white/5 rounded-2xl relative overflow-hidden h-48 flex flex-col justify-end">
+                  <div 
+                    className={clsx(
+                      "w-full rounded-t-xl transition-all duration-1000 ease-out relative group-hover/bar:brightness-125",
+                      h > 75 ? "bg-accent shadow-[0_0_20px_rgba(var(--accent-rgb),0.4)]" : 
+                      h > 40 ? "bg-blue-500" : "bg-slate-700"
+                    )}
+                    style={{ height: `${h}%` }}
+                  >
+                    {/* Animated shine effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover/bar:animate-[shimmer_1.5s_infinite]" />
+                  </div>
+                </div>
+                <span className="text-[10px] font-black text-slate-500 group-hover/bar:text-white transition-colors uppercase tracking-widest shrink-0">
                   {timeRange === '7D' ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i] : `W${i+1}`}
                 </span>
               </div>
