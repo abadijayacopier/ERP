@@ -15,7 +15,8 @@ import {
   Bell, 
   Plus, 
   Wrench,
-  DollarSign
+  DollarSign,
+  Activity
 } from "lucide-react";
 import { clsx } from "clsx";
 import { apiRequest } from "@/lib/api-client";

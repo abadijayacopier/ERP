@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
+import { successResponse, errorResponse } from "@/lib/api-response";
 import { UserService } from "@/services/user.service";
 
 export async function GET() {
   try {
     const users = await UserService.getAllUsers();
-    return NextResponse.json(users);
+    return successResponse(users);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return errorResponse(error.message);
   }
 }
 
@@ -14,9 +14,9 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const newUser = await UserService.createUser(body);
-    return NextResponse.json(newUser);
+    return successResponse(newUser, 'User created successfully', 201);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return errorResponse(error.message);
   }
 }
 
@@ -24,8 +24,8 @@ export async function PATCH(req: Request) {
   try {
     const { id, ...data } = await req.json();
     const updatedUser = await UserService.updateUser(id, data);
-    return NextResponse.json(updatedUser);
+    return successResponse(updatedUser, 'User updated successfully');
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return errorResponse(error.message);
   }
 }

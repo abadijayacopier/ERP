@@ -17,6 +17,8 @@ export const pool =
 
 if (process.env.NODE_ENV !== 'production') globalForDb.pool = pool;
 
+export const db = pool;
+
 export async function query(sql: string, params?: any[]) {
   try {
     const [results] = await pool.execute(sql, params);
