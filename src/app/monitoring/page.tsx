@@ -46,11 +46,19 @@ export default function MonitoringPage() {
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState("Summary");
   const [data, setData] = useState<any>(null);
+  const [selectedGroup, setSelectedGroup] = useState<any>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const itemsPerPage = 10;
   
   const fetchKpiData = async () => {
     try {
       setLoading(true);
-      const response = await apiRequest('kpi/stats');
+      // Add a small artificial delay to ensure the "Syncing" animation is satisfyingly visible
+      const [response] = await Promise.all([
+        apiRequest('kpi/stats'),
+        new Promise(resolve => setTimeout(resolve, 1200))
+      ]);
       if (response) {
         setData(response);
       }
@@ -82,9 +90,27 @@ export default function MonitoringPage() {
   const paretoData = data?.pareto || [];
   const downUnits = data?.downUnits || [];
   const dailyFleet = data?.dailyFleet || [];
+  const hierarchyData = data?.hierarchy || [];
+
+  // Filter & Pagination Logic
+  const filteredFleet = dailyFleet.filter((u: any) => 
+    u.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    u.model.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredFleet.length / itemsPerPage);
+  const paginatedFleet = filteredFleet.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  // Filter units for the selected group detail view
+  const groupUnits = selectedGroup ? dailyFleet.filter((u: any) => 
+    u.model === selectedGroup.sub_group
+  ) : [];
 
   return (
-    <div className="min-h-screen p-8 bg-[#0b0f1a]">
+    <div className="min-h-screen p-8 bg-[#0b0f1a] relative">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
         <div>
@@ -101,7 +127,11 @@ export default function MonitoringPage() {
           {["Summary", "Daily", "Hierarchy"].map((view) => (
             <button 
               key={view}
-              onClick={() => setActiveView(view)}
+              onClick={() => {
+                setActiveView(view);
+                setCurrentPage(1); // Reset page when switching views
+                setSearchTerm(""); // Reset search when switching views
+              }}
               className={clsx(
                 "px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
                 activeView === view ? "bg-accent text-primary shadow-lg shadow-accent/20" : "text-slate-400 hover:text-white"
@@ -115,18 +145,41 @@ export default function MonitoringPage() {
 
       {activeView === "Summary" ? (
         <div className="grid grid-cols-1 w-full">
-          <div className="glass-card min-w-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-             <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+          <div className="glass-card min-w-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col">
+             <div className="p-8 border-b border-white/5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white/[0.02]">
                 <div className="flex items-center gap-3">
                   <FileSpreadsheet className="text-accent" size={20} />
                   <h3 className="text-xl font-black text-white uppercase tracking-tight font-outfit">Mega Summary Report</h3>
                 </div>
-                <button onClick={fetchKpiData} className="px-4 py-2 rounded-xl bg-white/5 text-slate-400 hover:text-white flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all border border-white/10">
-                  <RefreshCw size={14} /> Sync Database
-                </button>
+                
+                <div className="flex flex-1 max-w-2xl items-center gap-4">
+                  <div className="relative flex-1 group">
+                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-accent transition-colors">
+                      <Filter size={14} />
+                    </div>
+                    <input 
+                      type="text" 
+                      placeholder="Quick Filter by ID or Model..."
+                      value={searchTerm}
+                      onChange={(e) => {
+                        setSearchTerm(e.target.value);
+                        setCurrentPage(1);
+                      }}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-white placeholder:text-slate-600 focus:outline-none focus:border-accent/40 focus:bg-white/[0.08] transition-all uppercase tracking-widest"
+                    />
+                  </div>
+                  <button 
+                    onClick={fetchKpiData} 
+                    disabled={loading}
+                    className="px-6 py-3 rounded-xl bg-white/5 text-slate-400 hover:text-white flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-all border border-white/10 shrink-0 disabled:opacity-50"
+                  >
+                    <RefreshCw size={14} className={clsx(loading && "animate-spin text-accent")} /> 
+                    {loading ? "Syncing..." : "Sync Database"}
+                  </button>
+                </div>
              </div>
 
-             <div className="overflow-x-auto w-full custom-scrollbar max-h-[650px] border-b border-white/5 rounded-br-2xl">
+             <div className="overflow-x-auto w-full custom-scrollbar max-h-[650px] border-b border-white/5">
                <style jsx>{`
                  .custom-scrollbar::-webkit-scrollbar {
                    height: 14px;
@@ -177,9 +230,9 @@ export default function MonitoringPage() {
                  </tr>
                </thead>
                <tbody className="divide-y divide-white/5 bg-black/20">
-                 {dailyFleet.map((u: any, i: number) => (
+                 {paginatedFleet.map((u: any, i: number) => (
                    <tr key={i} className="hover:bg-accent/5 transition-colors group border-b border-white/5">
-                     <td className="p-4 text-xs font-bold text-slate-500 border-r border-white/5">{i + 1}</td>
+                     <td className="p-4 text-xs font-bold text-slate-500 border-r border-white/5">{(currentPage - 1) * itemsPerPage + i + 1}</td>
                      <td className="p-4 text-sm font-black text-white sticky left-0 bg-[#0b0f1a] z-10 border-r border-white/5">{u.id}</td>
                      <td className="p-4 text-xs font-bold text-slate-400 border-r border-white/5">{u.model}</td>
                      <td className="p-4 text-xs font-mono text-slate-300 text-center border-r border-white/5 bg-white/[0.01]">{(u.awal_bulan || 0).toLocaleString()}</td>
@@ -205,22 +258,85 @@ export default function MonitoringPage() {
                </tbody>
              </table>
            </div>
+
+           {/* Pagination UI for Summary */}
+           <div className="p-8 border-t border-white/5 flex items-center justify-between bg-white/[0.01] rounded-b-2xl">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                Showing {paginatedFleet.length} of {filteredFleet.length} filtered units
+              </p>
+              <div className="flex items-center gap-2">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="px-4 py-2 rounded-xl bg-white/5 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white disabled:opacity-30 transition-all border border-white/10"
+                >
+                  Prev
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: Math.min(totalPages, 5) }).map((_, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setCurrentPage(idx + 1)}
+                      className={clsx(
+                        "w-10 h-10 rounded-xl text-xs font-black transition-all border",
+                        currentPage === idx + 1 
+                          ? "bg-accent text-primary border-accent" 
+                          : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
+                      )}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                  {totalPages > 5 && <span className="text-slate-600 px-2">...</span>}
+                </div>
+                <button 
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="px-4 py-2 rounded-xl bg-white/5 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white disabled:opacity-30 transition-all border border-white/10"
+                >
+                  Next
+                </button>
+              </div>
+           </div>
           </div>
         </div>
       ) : activeView === "Daily" ? (
-        <div className="glass-card p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-           <div className="flex items-center justify-between mb-8">
+        <div className="glass-card p-8 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col min-h-[600px]">
+           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
               <div className="flex items-center gap-3">
                 <Calendar className="text-accent" size={20} />
                 <h3 className="text-xl font-black text-white uppercase tracking-tight">Daily Performance Status</h3>
               </div>
-              <div className="flex gap-2">
-                <button className="p-2 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/10"><Filter size={18} /></button>
-                <button onClick={fetchKpiData} className="p-2 rounded-lg bg-white/5 text-slate-400 hover:text-white border border-white/10"><RefreshCw size={18} /></button>
+              
+              <div className="flex flex-1 max-w-2xl items-center gap-4 w-full">
+                <div className="relative flex-1 group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-accent transition-colors">
+                    <Filter size={14} />
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="Search Unit ID..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-xs font-bold text-white placeholder:text-slate-600 focus:outline-none focus:border-accent/40 transition-all uppercase tracking-widest"
+                  />
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button 
+                    onClick={fetchKpiData} 
+                    disabled={loading}
+                    className="p-3 rounded-xl bg-white/5 text-slate-400 hover:text-white border border-white/10 transition-all disabled:opacity-50"
+                  >
+                    <RefreshCw size={18} className={clsx(loading && "animate-spin text-accent")} />
+                  </button>
+                </div>
               </div>
            </div>
 
-           <div className="overflow-x-auto">
+           <div className="overflow-x-auto flex-1">
              <table className="w-full text-left">
                <thead className="bg-white/5">
                  <tr>
@@ -232,7 +348,7 @@ export default function MonitoringPage() {
                  </tr>
                </thead>
                <tbody className="divide-y divide-white/5">
-                 {dailyFleet.map((u: any, i: number) => (
+                 {paginatedFleet.map((u: any, i: number) => (
                    <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
                      <td className="p-4 text-sm font-black text-white group-hover:text-accent transition-colors">{u.id}</td>
                      <td className="p-4 text-sm font-mono text-slate-400 text-right">{(u.awal_bulan || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
@@ -244,10 +360,49 @@ export default function MonitoringPage() {
                </tbody>
              </table>
            </div>
+
+           {/* Pagination UI */}
+           <div className="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                Showing {Math.min(itemsPerPage, dailyFleet.length)} of {dailyFleet.length} Units
+              </p>
+              <div className="flex items-center gap-2">
+                <button 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  className="px-4 py-2 rounded-xl bg-white/5 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 transition-all border border-white/10"
+                >
+                  Prev
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }).map((_, idx) => (
+                    <button 
+                      key={idx}
+                      onClick={() => setCurrentPage(idx + 1)}
+                      className={clsx(
+                        "w-10 h-10 rounded-xl text-xs font-black transition-all border",
+                        currentPage === idx + 1 
+                          ? "bg-accent text-primary border-accent shadow-lg shadow-accent/20" 
+                          : "bg-white/5 text-slate-400 border-white/10 hover:text-white"
+                      )}
+                    >
+                      {idx + 1}
+                    </button>
+                  ))}
+                </div>
+                <button 
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  className="px-4 py-2 rounded-xl bg-white/5 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-white disabled:opacity-30 disabled:hover:text-slate-400 transition-all border border-white/10"
+                >
+                  Next
+                </button>
+              </div>
+           </div>
         </div>
       ) : activeView === "Hierarchy" ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in zoom-in duration-500">
-          {data?.hierarchy?.map((group: any, idx: number) => (
+          {hierarchyData.map((group: any, idx: number) => (
             <div key={idx} className="glass-card p-8 group hover:border-accent/40 transition-all">
               <div className="flex items-center justify-between mb-6">
                 <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-accent group-hover:bg-accent/10 transition-all">
@@ -260,7 +415,10 @@ export default function MonitoringPage() {
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{group.parent_group}</p>
               <h3 className="text-2xl font-black text-white uppercase tracking-tight">{group.sub_group}</h3>
               <div className="mt-6 pt-6 border-t border-white/5">
-                <button className="text-xs font-bold text-accent hover:underline flex items-center gap-2">
+                <button 
+                  onClick={() => setSelectedGroup(group)}
+                  className="text-xs font-bold text-accent hover:underline flex items-center gap-2"
+                >
                   VIEW GROUP DETAILS <ChevronDown size={14} />
                 </button>
               </div>
@@ -268,6 +426,78 @@ export default function MonitoringPage() {
           ))}
         </div>
       ) : null}
+
+      {/* Slide-over for Group Details */}
+      {selectedGroup && (
+        <div className="fixed inset-0 z-[100] flex justify-end animate-in fade-in duration-300">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedGroup(null)} />
+          <div className="relative w-full max-w-2xl bg-[#0b0f1a] border-l border-white/10 shadow-2xl animate-in slide-in-from-right duration-500 flex flex-col h-full">
+            <div className="p-8 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-black text-accent uppercase tracking-[0.2em] mb-1">{selectedGroup.parent_group}</p>
+                <h3 className="text-3xl font-black text-white uppercase font-outfit">{selectedGroup.sub_group}</h3>
+              </div>
+              <button 
+                onClick={() => setSelectedGroup(null)}
+                className="w-12 h-12 rounded-2xl bg-white/5 text-slate-400 hover:text-white flex items-center justify-center transition-all border border-white/10"
+              >
+                <RefreshCw size={20} className="rotate-45" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+              <div className="grid grid-cols-1 gap-4">
+                {groupUnits.map((unit: any, idx: number) => (
+                  <div key={idx} className="p-6 rounded-2xl bg-white/[0.02] border border-white/5 hover:border-accent/20 transition-all group">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-accent group-hover:bg-accent/10 transition-all">
+                          <Gauge size={24} />
+                        </div>
+                        <div>
+                          <h4 className="text-xl font-black text-white uppercase">{unit.id}</h4>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Active System Connection</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Current HM</p>
+                        <p className="text-2xl font-black text-white font-mono">{(unit.hm_running || 0).toLocaleString()}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4 pt-4 border-t border-white/5">
+                      <div className="p-3 rounded-xl bg-white/[0.02] text-center">
+                        <p className="text-[9px] font-black text-slate-500 uppercase mb-1">PA</p>
+                        <p className="text-sm font-black text-green-400">{unit.pa}%</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/[0.02] text-center">
+                        <p className="text-[9px] font-black text-slate-500 uppercase mb-1">MA</p>
+                        <p className="text-sm font-black text-accent">{unit.ma}%</p>
+                      </div>
+                      <div className="p-3 rounded-xl bg-white/[0.02] text-center">
+                        <p className="text-[9px] font-black text-slate-500 uppercase mb-1">D (%)</p>
+                        <p className="text-sm font-black text-red-400">{unit.d_percent}%</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-8 border-t border-white/5 bg-white/[0.01]">
+              <button 
+                onClick={() => setSelectedGroup(null)}
+                className="w-full py-4 rounded-2xl bg-white/5 text-slate-400 font-black uppercase tracking-widest text-xs transition-all border border-white/10 hover:bg-accent hover:text-primary hover:border-accent"
+              >
+                Close Detailed View
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main KPI Overview (Always visible in Summary if not in specialized views) */}
       {activeView === "Summary" && (
