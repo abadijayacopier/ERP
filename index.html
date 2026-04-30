@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mining ERP | Contractor Performance System</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i data-lucide="mountain"></i>
+                </div>
+                <span class="logo-text">MINE<span style="color: var(--accent);">ERP</span></span>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="nav-item">
+                    <a class="nav-link active" data-screen="dashboard">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Executive Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-screen="fleet">
+                        <i data-lucide="truck"></i>
+                        <span>Fleet Monitoring</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-screen="dsr">
+                        <i data-lucide="file-text"></i>
+                        <span>Shift Reports (DSR)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-screen="logistics">
+                        <i data-lucide="fuel"></i>
+                        <span>Fuel & Logistics</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-screen="safety">
+                        <i data-lucide="shield-alert"></i>
+                        <span>Safety & HSE</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div style="padding: 1rem; margin-top: auto;">
+                <a class="nav-link" style="color: var(--danger);">
+                    <i data-lucide="log-out"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content">
+            <header class="top-header">
+                <div class="search-bar">
+                    <i data-lucide="search" size="18"></i>
+                    <input type="text" placeholder="Search fleet, incidents, reports...">
+                </div>
+                
+                <div class="user-profile">
+                    <div style="text-align: right;">
+                        <div style="font-weight: 600; font-size: 0.875rem;">Site Manager</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Adaro Site - South</div>
+                    </div>
+                    <div class="avatar"></div>
+                </div>
+            </header>
+
+            <div id="screen-container" class="page-wrapper">
+                <!-- Screens will be injected here -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Screen Templates (Hidden) -->
+    <div id="templates" class="hidden">
+        <!-- 1. Executive Operations Dashboard -->
+        <div id="screen-dashboard">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+                <div>
+                    <h1 class="outfit">Operations Dashboard</h1>
+                    <p style="color: var(--text-muted);">Overview for April 28, 2026</p>
+                </div>
+                <div class="btn btn-primary">
+                    <i data-lucide="download"></i> Export Reports
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="label">Daily OB Removal</div>
+                    <div class="value">42,500 <span style="font-size: 1rem;">BCM</span></div>
+                    <div class="trend up">
+                        <i data-lucide="trending-up" size="14"></i> 12% vs Target
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Fleet Availability</div>
+                    <div class="value">88.4%</div>
+                    <div class="trend down">
+                        <i data-lucide="trending-down" size="14"></i> 2% vs Target
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Fuel Consumption</div>
+                    <div class="value">1.45 <span style="font-size: 1rem;">L/BCM</span></div>
+                    <div class="trend up">
+                        <i data-lucide="check" size="14"></i> Optimal
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Safety Incident Rate</div>
+                    <div class="value">0.00</div>
+                    <div class="trend">LTI-Free: 452 Days</div>
+                </div>
+            </div>
+
+            <div class="dashboard-grid" style="grid-template-columns: 2fr 1fr;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="outfit">Production vs Target (7 Days)</h3>
+                        <div class="btn btn-ghost" style="padding: 4px 8px; font-size: 0.75rem;">Weekly</div>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="productionChart" height="250"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="outfit">Fleet Status</h3>
+                    </div>
+                    <div class="card-body" style="display: grid; place-items: center;">
+                        <canvas id="fleetStatusChart" height="250"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Fleet Monitoring & Maintenance Hub -->
+        <div id="screen-fleet">
+            <h1 class="outfit" style="margin-bottom: 2rem;">Fleet Management</h1>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="outfit">Active Equipment Status</h3>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="form-control" style="width: 200px; height: 35px; font-size: 0.8rem;" placeholder="Filter by Unit ID">
+                        <div class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem;">Filter</div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="data-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Unit ID</th>
+                                    <th>Type</th>
+                                    <th>Model</th>
+                                    <th>Status</th>
+                                    <th>Operator</th>
+                                    <th>Location</th>
+                                    <th>Fuel %</th>
+                                    <th>Next PM</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>EXC-001</strong></td>
+                                    <td>Excavator</td>
+                                    <td>CAT 6060</td>
+                                    <td><span class="badge badge-running">Running</span></td>
+                                    <td>Budi Santoso</td>
+                                    <td>Pit A - North</td>
+                                    <td>65%</td>
+                                    <td>120 hrs</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DT-205</strong></td>
+                                    <td>Dump Truck</td>
+                                    <td>HD785-7</td>
+                                    <td><span class="badge badge-running">Running</span></td>
+                                    <td>Ahmad Yani</td>
+                                    <td>Waste Dump 2</td>
+                                    <td>32%</td>
+                                    <td>45 hrs</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>DT-208</strong></td>
+                                    <td>Dump Truck</td>
+                                    <td>HD785-7</td>
+                                    <td><span class="badge badge-standby">Standby</span></td>
+                                    <td>-</td>
+                                    <td>Pit B - South</td>
+                                    <td>90%</td>
+                                    <td>12 hrs</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>EXC-004</strong></td>
+                                    <td>Excavator</td>
+                                    <td>PC2000-8</td>
+                                    <td><span class="badge badge-breakdown">Breakdown</span></td>
+                                    <td>Junaidi</td>
+                                    <td>Pit A - Workshop</td>
+                                    <td>15%</td>
+                                    <td>OVERDUE</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Daily Shift Report (DSR) Entry -->
+        <div id="screen-dsr">
+            <h1 class="outfit" style="margin-bottom: 2rem;">Daily Shift Report (DSR)</h1>
+            
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="outfit">Shift Info</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" class="form-control" value="2026-04-28">
+                        </div>
+                        <div class="form-group">
+                            <label>Shift</label>
+                            <select class="form-control">
+                                <option>Day Shift (06:00 - 18:00)</option>
+                                <option>Night Shift (18:00 - 06:00)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Supervisor</label>
+                            <input type="text" class="form-control" value="Ahmad Yani">
+                        </div>
+                        <div class="form-group">
+                            <label>Weather Condition</label>
+                            <select class="form-control">
+                                <option>Clear / Sunny</option>
+                                <option>Cloudy</option>
+                                <option>Light Rain</option>
+                                <option>Heavy Rain (Stop Ops)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="outfit">Production Targets & Actuals</h3>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>OB Removal Target (BCM)</label>
+                                <input type="number" class="form-control" value="25000">
+                            </div>
+                            <div class="form-group">
+                                <label>OB Removal Actual (BCM)</label>
+                                <input type="number" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>Coal Getting Target (Ton)</label>
+                                <input type="number" class="form-control" value="5000">
+                            </div>
+                            <div class="form-group">
+                                <label>Coal Getting Actual (Ton)</label>
+                                <input type="number" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Site Observations / Delays</label>
+                            <textarea class="form-control" rows="4" placeholder="Mention rain delays, equipment bottlenecks, etc."></textarea>
+                        </div>
+
+                        <div style="text-align: right;">
+                            <button class="btn btn-ghost">Save Draft</button>
+                            <button class="btn btn-primary">Submit Report</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Fuel & Logistics Management -->
+        <div id="screen-logistics">
+            <h1 class="outfit" style="margin-bottom: 2rem;">Fuel & Logistics</h1>
+            
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="label">Fuel Stock (Main Tank)</div>
+                    <div class="value">85,400 <span style="font-size: 1rem;">L</span></div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Refill expected in 3 days</p>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Avg Consumption / Shift</div>
+                    <div class="value">12,200 <span style="font-size: 1rem;">L</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Tire Inventory (New)</div>
+                    <div class="value">24 <span style="font-size: 1rem;">Units</span></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="outfit">Fuel Consumption Trend</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="fuelChart" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Safety & HSE Incident Portal -->
+        <div id="screen-safety">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem;">
+                <div>
+                    <h1 class="outfit">Safety & HSE Portal</h1>
+                    <p style="color: var(--text-muted);">Zero Harm - Safety First</p>
+                </div>
+                <div class="btn btn-primary" style="background: var(--safety-orange); color: white;">
+                    <i data-lucide="plus-circle"></i> Report New Incident
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="stat-card" style="border-left: 5px solid var(--success);">
+                    <div class="label">LTI Free Days</div>
+                    <div class="value" style="color: var(--success);">452</div>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid var(--warning);">
+                    <div class="label">Safety Observations (MTD)</div>
+                    <div class="value" style="color: var(--warning);">128</div>
+                </div>
+                <div class="stat-card" style="border-left: 5px solid var(--danger);">
+                    <div class="label">Near Miss (MTD)</div>
+                    <div class="value" style="color: var(--danger);">2</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="outfit">Recent Incidents / Observations</h3>
+                </div>
+                <div class="card-body">
+                    <div class="data-table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Severity</th>
+                                    <th>Status</th>
+                                    <th>Reported By</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Apr 25, 2026</td>
+                                    <td>Near Miss</td>
+                                    <td><span style="color: var(--warning);">Low</span></td>
+                                    <td>Closed</td>
+                                    <td>Dani R.</td>
+                                    <td><a href="#" style="color: var(--accent);">View</a></td>
+                                </tr>
+                                <tr>
+                                    <td>Apr 20, 2026</td>
+                                    <td>Property Damage</td>
+                                    <td><span style="color: var(--safety-orange);">Medium</span></td>
+                                    <td>Investigating</td>
+                                    <td>Yusuf K.</td>
+                                    <td><a href="#" style="color: var(--accent);">View</a></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // Screen Management
+        const screens = {
+            dashboard: {
+                title: "Executive Dashboard",
+                init: () => {
+                    initProductionChart();
+                    initFleetStatusChart();
+                }
+            },
+            fleet: {
+                title: "Fleet Monitoring",
+                init: () => {}
+            },
+            dsr: {
+                title: "Shift Reports (DSR)",
+                init: () => {}
+            },
+            logistics: {
+                title: "Fuel & Logistics",
+                init: () => {
+                    initFuelChart();
+                }
+            },
+            safety: {
+                title: "Safety & HSE",
+                init: () => {}
+            }
+        };
+
+        function switchScreen(screenId) {
+            const container = document.getElementById('screen-container');
+            const template = document.getElementById(`screen-${screenId}`);
+            
+            if (!template) return;
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.screen === screenId) link.classList.add('active');
+            });
+
+            // Inject content
+            container.innerHTML = template.innerHTML;
+            
+            // Re-initialize icons for the new content
+            lucide.createIcons();
+            
+            // Run screen-specific initialization
+            if (screens[screenId].init) {
+                screens[screenId].init();
+            }
+        }
+
+        // --- Charts Initialization ---
+
+        function initProductionChart() {
+            const ctx = document.getElementById('productionChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Actual Production (BCM)',
+                        data: [38000, 42000, 41000, 45000, 42500, 43000, 44000],
+                        borderColor: '#facc15',
+                        backgroundColor: 'rgba(250, 204, 21, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }, {
+                        label: 'Target (BCM)',
+                        data: [40000, 40000, 40000, 40000, 40000, 40000, 40000],
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        borderDash: [5, 5],
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#94a3b8' } } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        function initFleetStatusChart() {
+            const ctx = document.getElementById('fleetStatusChart');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Running', 'Standby', 'Breakdown'],
+                    datasets: [{
+                        data: [75, 15, 10],
+                        backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '70%',
+                    plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } }
+                }
+            });
+        }
+
+        function initFuelChart() {
+            const ctx = document.getElementById('fuelChart');
+            if (!ctx) return;
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['22 Apr', '23 Apr', '24 Apr', '25 Apr', '26 Apr', '27 Apr', '28 Apr'],
+                    datasets: [{
+                        label: 'Liters Consumed',
+                        data: [12000, 11500, 13000, 12200, 12500, 12100, 12300],
+                        backgroundColor: '#facc15',
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        // Event Listeners
+        document.querySelectorAll('.nav-link[data-screen]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchScreen(link.dataset.screen);
+            });
+        });
+
+        // Initialize
+        window.onload = () => {
+            lucide.createIcons();
+            switchScreen('dashboard');
+        };
+    </script>
+</body>
+</html>
