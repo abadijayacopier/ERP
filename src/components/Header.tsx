@@ -27,9 +27,12 @@ import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { useGlobalSettings } from "@/context/GlobalSettingsContext";
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function Header() {
   const router = useRouter();
   const { language, setLanguage, currency, setCurrency, theme, setTheme, t } = useGlobalSettings();
+  const { user, logout } = useAuth();
   
   const [hasAlerts, setHasAlerts] = useState(false);
   const [stats, setStats] = useState<any>(null);
@@ -73,6 +76,11 @@ export default function Header() {
     setShowSettings(false);
     setShowProfile(false);
     router.push(url);
+  };
+
+  const getUserInitials = () => {
+    if (!user || !user.full_name) return "US";
+    return user.full_name.substring(0, 2).toUpperCase();
   };
 
   return (
@@ -251,8 +259,12 @@ export default function Header() {
             className="flex items-center gap-4 pl-2 cursor-pointer group"
           >
             <div className="text-right flex flex-col">
-              <div className="text-sm font-bold text-white group-hover:text-accent transition-colors">Abadijaya Dev</div>
-              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mt-1">Site Manager • South</div>
+              <div className="text-sm font-bold text-white group-hover:text-accent transition-colors">
+                {user ? user.full_name : "Loading..."}
+              </div>
+              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none mt-1">
+                {user ? `${user.role} • ${user.department}` : "System Loading"}
+              </div>
             </div>
             <div className="relative">
               <div className={clsx(
@@ -261,7 +273,7 @@ export default function Header() {
               )}>
                 <div className="w-full h-full rounded-[14px] bg-[#0b0f1a] flex items-center justify-center overflow-hidden">
                   <div className="w-full h-full bg-accent/20 flex items-center justify-center text-accent font-black text-lg font-outfit">
-                    AD
+                    {getUserInitials()}
                   </div>
                 </div>
               </div>
@@ -273,12 +285,16 @@ export default function Header() {
           {showProfile && (
             <div className="absolute top-[calc(100%+25px)] right-0 w-72 glass-card p-6 shadow-2xl border-accent/20 animate-in fade-in zoom-in-95 duration-200">
                <div className="flex items-center gap-4 p-4 mb-6 rounded-2xl bg-white/5 border border-white/10">
-                  <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-xl">AD</div>
+                  <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center text-primary font-black text-xl">
+                    {getUserInitials()}
+                  </div>
                   <div>
-                    <div className="text-sm font-black text-white">Abadijaya Dev</div>
+                    <div className="text-sm font-black text-white">{user?.full_name || "Unknown"}</div>
                     <div className="flex items-center gap-1.5 mt-1">
                        <ShieldCheck size={12} className="text-accent" />
-                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Admin Site</span>
+                       <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                         {user?.role || "GUEST"}
+                       </span>
                     </div>
                   </div>
                </div>
@@ -302,7 +318,7 @@ export default function Header() {
                   <div className="h-[1px] bg-white/5 my-4"></div>
                   
                   <button 
-                    onClick={() => console.log("Logout triggered")}
+                    onClick={() => logout()}
                     className="w-full flex items-center gap-4 p-3.5 rounded-xl hover:bg-rose-500/10 text-rose-500 transition-all group"
                   >
                     <div className="p-2 bg-rose-500/20 rounded-lg group-hover:rotate-12 transition-transform">

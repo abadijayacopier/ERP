@@ -37,6 +37,7 @@ CREATE TABLE users (
     full_name VARCHAR(100) NOT NULL,
     role ENUM('ADMIN', 'EXECUTIVE', 'MECHANIC', 'TECHNICIAN', 'OPERATOR', 'HSE') DEFAULT 'TECHNICIAN',
     department VARCHAR(100),
+    password VARCHAR(255) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -161,7 +162,7 @@ CREATE TABLE invoices (
     due_date DATE,
     total_amount DECIMAL(20, 2) DEFAULT 0,
     tax_amount DECIMAL(20, 2) DEFAULT 0,
-    status ENUM('Draft', 'Sent', 'Paid', 'Overdue', 'Cancelled') DEFAULT 'Draft',
+    status ENUM('Draft', 'Pending', 'Sent', 'Paid', 'Overdue', 'Cancelled') DEFAULT 'Draft',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

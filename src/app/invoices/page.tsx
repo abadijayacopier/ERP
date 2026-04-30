@@ -17,15 +17,18 @@ import {
   Clock,
   DollarSign,
   Download,
-  ChevronRight
+  ChevronRight,
+  CheckCircle
 } from "lucide-react";
 import { clsx } from "clsx";
 import { Modal, Toast, ConfirmModal } from "@/components/UIFeedback";
 import { apiRequest } from "@/lib/api-client";
 import { useGlobalSettings } from "@/context/GlobalSettingsContext";
+import { useAuth } from "@/context/AuthContext";
 
 export default function InvoicesPage() {
   const { t, formatCurrency } = useGlobalSettings();
+  const { user } = useAuth();
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,10 +59,10 @@ export default function InvoicesPage() {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const data = await apiRequest('invoices');
-      setInvoices(data);
+      const response = await apiRequest('invoices');
+      setInvoices(response.data || response); // Handle both wrapped and unwrapped arrays
     } catch (err: any) {
-      setShowToast({ msg: err.message, type: "error" });
+      setShowToast({ msg: err.message || "Failed to fetch", type: "error" });
     } finally {
       setLoading(false);
     }
@@ -122,8 +125,28 @@ export default function InvoicesPage() {
     }
   };
 
-  const totalReceivables = invoices.reduce((acc, inv) => acc + (inv.status !== 'Paid' ? parseFloat(inv.total_amount) : 0), 0);
-  const totalPaid = invoices.reduce((acc, inv) => acc + (inv.status === 'Paid' ? parseFloat(inv.total_amount) : 0), 0);
+  const handleApprove = async (id: number, currentData: any) => {
+    try {
+      await apiRequest(`invoices?id=${id}`, 'PATCH', {
+        ...currentData,
+        status: 'Sent' // Changing status from Pending to Sent upon approval
+      });
+      setShowToast({ msg: "Invoice approved and sent!", type: "success" });
+      fetchInvoices();
+      if (selectedInvoice && selectedInvoice.id === id) {
+         setSelectedInvoice({...selectedInvoice, status: 'Sent'});
+      }
+    } catch (err: any) {
+      setShowToast({ msg: err.message, type: "error" });
+    }
+  };
+
+  const invoicesList = Array.isArray(invoices) ? invoices : [];
+  const totalReceivables = invoicesList.reduce((acc, inv) => acc + (inv.status !== 'Paid' ? parseFloat(inv.total_amount) : 0), 0);
+  const totalPaid = invoicesList.reduce((acc, inv) => acc + (inv.status === 'Paid' ? parseFloat(inv.total_amount) : 0), 0);
+  const pendingCount = invoicesList.filter(inv => inv.status === 'Pending').length;
+
+  const canApprove = user?.role === 'EXECUTIVE' || user?.role === 'MANAGER' || user?.role === 'ADMIN';
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
@@ -175,10 +198,10 @@ export default function InvoicesPage() {
         <div className="glass-card p-10 flex flex-col justify-center border-orange-500/20 bg-orange-500/5 group">
            <div className="flex items-center gap-3 mb-6">
               <div className="p-3 rounded-2xl bg-orange-500/20 text-orange-400 border border-orange-500/30 group-hover:rotate-12 transition-transform"><Clock size={24} /></div>
-              <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">{t('action_required')}</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-orange-400">BUTUH TINDAKAN</span>
            </div>
-           <h3 className="text-5xl font-black font-outfit text-white mb-2">12</h3>
-           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest leading-tight">{t('pending_approval')}<br/>site manager approval</p>
+           <h3 className="text-5xl font-black font-outfit text-white mb-2">{pendingCount}</h3>
+           <p className="text-slate-400 text-sm font-bold uppercase tracking-widest leading-tight">MENUNGGU PERSETUJUAN<br/>SITE MANAGER APPROVAL</p>
         </div>
       </div>
 
@@ -205,12 +228,12 @@ export default function InvoicesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {invoices.length === 0 ? (
+                {invoicesList.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-8 py-20 text-center text-slate-500 italic opacity-30 uppercase text-[10px] font-black tracking-widest">No billing records found</td>
                   </tr>
                 ) : (
-                  invoices.map((inv) => (
+                  invoicesList.map((inv) => (
                     <tr key={inv.id} className="hover:bg-white/5 transition-all group/row">
                       <td className="px-8 py-6">
                         <div className="text-sm font-black text-white group-hover/row:text-accent transition-colors flex items-center gap-2">
@@ -234,6 +257,11 @@ export default function InvoicesPage() {
                       </td>
                       <td className="px-8 py-6 text-right">
                         <div className="flex justify-end gap-2 transition-all duration-300">
+                           {inv.status === 'Pending' && canApprove && (
+                             <button onClick={() => handleApprove(inv.id, inv)} className="p-2.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 hover:bg-orange-500 hover:text-white transition-all" title="Approve Invoice">
+                               <CheckCircle size={16} />
+                             </button>
+                           )}
                            <button onClick={() => handleView(inv)} className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-accent hover:border-accent/30 transition-all" title="View Invoice"><Eye size={16} /></button>
                            <button onClick={() => handleEdit(inv)} className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-blue-400 hover:border-blue-400/30 transition-all" title="Edit Invoice"><Pencil size={16} /></button>
                            <button onClick={() => handlePrint(inv.id)} className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-orange-400 hover:border-orange-400/30 transition-all" title="Print Invoice"><Printer size={16} /></button>
@@ -260,6 +288,7 @@ export default function InvoicesPage() {
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</label>
               <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="form-input">
                 <option value="Draft" className="bg-[#0b0f1a]">Draft</option>
+                <option value="Pending" className="bg-[#0b0f1a]">Pending Approval</option>
                 <option value="Sent" className="bg-[#0b0f1a]">Sent</option>
                 <option value="Paid" className="bg-[#0b0f1a]">Paid</option>
                 <option value="Overdue" className="bg-[#0b0f1a]">Overdue</option>
@@ -307,6 +336,7 @@ export default function InvoicesPage() {
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</label>
               <select value={formData.status} onChange={(e) => setFormData({...formData, status: e.target.value})} className="form-input">
                 <option value="Draft" className="bg-[#0b0f1a]">Draft</option>
+                <option value="Pending" className="bg-[#0b0f1a]">Pending Approval</option>
                 <option value="Sent" className="bg-[#0b0f1a]">Sent</option>
                 <option value="Paid" className="bg-[#0b0f1a]">Paid</option>
                 <option value="Overdue" className="bg-[#0b0f1a]">Overdue</option>
@@ -393,6 +423,12 @@ export default function InvoicesPage() {
             </div>
 
             <div className="pt-4 flex gap-3">
+              {selectedInvoice.status === 'Pending' && canApprove && (
+                <button onClick={() => { setIsDetailModalOpen(false); handleApprove(selectedInvoice.id, selectedInvoice); }} className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-orange-500/20 text-orange-400 font-bold hover:bg-orange-500 hover:text-white transition-all">
+                  <CheckCircle size={18} />
+                  Approve Invoice
+                </button>
+              )}
               <button onClick={() => { setIsDetailModalOpen(false); handlePrint(selectedInvoice.id); }} className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
                 <Printer size={18} />
                 Print Document
@@ -446,13 +482,14 @@ function StatusBadge({ status }: { status: string }) {
   const colors: any = {
     'Paid': 'bg-green-500/10 text-green-400 border-green-500/20',
     'Sent': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+    'Pending': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
     'Draft': 'bg-slate-500/10 text-slate-400 border-white/10',
     'Overdue': 'bg-red-500/10 text-red-400 border-red-500/20'
   };
   
   return (
     <div className={clsx("inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest border", colors[status] || colors.Draft)}>
-      <div className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", status === 'Paid' ? 'bg-green-500' : status === 'Overdue' ? 'bg-red-500' : 'bg-slate-400')}></div>
+      <div className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", status === 'Paid' ? 'bg-green-500' : status === 'Overdue' ? 'bg-red-500' : status === 'Pending' ? 'bg-orange-500' : 'bg-slate-400')}></div>
       {status}
     </div>
   );
