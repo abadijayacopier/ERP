@@ -63,11 +63,11 @@ export default function Dashboard() {
             <span className="text-[10px] font-black text-accent uppercase tracking-widest">{userRole} CONSOLE</span>
           </div>
           <h1 className="text-5xl font-black font-outfit text-white tracking-tighter leading-none">
-            Operation <span className="text-gradient">Pulse</span>
+            {userRole === 'OPERATOR' ? "Shift" : userRole === 'TECHNICIAN' ? "Workshop" : "Operation"} <span className="text-gradient">{userRole === 'OPERATOR' ? "Console" : userRole === 'TECHNICIAN' ? "Command" : "Pulse"}</span>
           </h1>
           <p className="text-slate-400 mt-2 font-bold flex items-center gap-2">
              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-             Site Monitoring System Live: {new Date().toLocaleTimeString()}
+             {userRole === 'OPERATOR' ? "Assigned Unit: HD785-102" : userRole === 'TECHNICIAN' ? "Shop Load: High" : "Site Monitoring System Live"}: {new Date().toLocaleTimeString()}
           </p>
         </div>
         
@@ -77,46 +77,35 @@ export default function Dashboard() {
            </button>
            <button className="btn-premium flex items-center gap-2 transition-all duration-500">
               <Plus size={18} />
-              <span>{t('create_report')}</span>
+              <span>{userRole === 'OPERATOR' ? "Log Shift Data" : userRole === 'TECHNICIAN' ? "Create Job Order" : t('create_report')}</span>
            </button>
         </div>
       </div>
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          label={t('fleet')} 
-          value={stats?.fleet?.find((f: any) => f.status === 'Running')?.count || 0} 
-          sub="Total: 55 Units" 
-          icon={Truck} 
-          color="text-accent" 
-          trend="+4.2%"
-        />
-        <StatCard 
-          label={t('total_production')} 
-          value={stats ? `${(stats.production / 1000).toFixed(1)}K` : "0"} 
-          sub="BCM this month" 
-          icon={TrendingUp} 
-          color="text-accent" 
-          trend="+12.5%"
-        />
-        <StatCard 
-          label="Monthly OpEx" 
-          value={formatCurrency(1250000000)} // Mock: 1.25B IDR
-          sub="Operational Costs" 
-          icon={DollarSign} 
-          color="text-yellow-500" 
-          trend="Budget OK"
-          isCurrency
-        />
-        <StatCard 
-          label={t('efficiency')} 
-          value="92.4%" 
-          sub="Availability (MA)" 
-          icon={BarChart3} 
-          color="text-emerald-400" 
-          trend="+2.1%"
-        />
+        {userRole === 'OPERATOR' ? (
+          <>
+            <StatCard label="Shift HM" value="10.5" sub="Hours this shift" icon={Clock} color="text-accent" trend="Target: 11" />
+            <StatCard label="Production" value="1,250" sub="BCM Tonnes" icon={TrendingUp} color="text-accent" trend="+5.2%" />
+            <StatCard label="Efficiency" value="94%" sub="Operator Score" icon={BarChart3} color="text-emerald-400" trend="Top 5%" />
+            <StatCard label="Safety" value="0" sub="Incidents" icon={AlertCircle} color="text-emerald-400" trend="Safe" />
+          </>
+        ) : userRole === 'TECHNICIAN' ? (
+          <>
+            <StatCard label="Active Jobs" value="12" sub="Pending Repair" icon={Wrench} color="text-accent" trend="4 Critical" />
+            <StatCard label="Completed Today" value="5" sub="Units released" icon={Truck} color="text-emerald-400" trend="+2" />
+            <StatCard label="Workshop Load" value="85%" sub="Capacity" icon={Activity} color="text-yellow-500" trend="Busy" />
+            <StatCard label="Pending PM" value="8" sub="Next 24h" icon={Clock} color="text-accent" trend="On Track" />
+          </>
+        ) : (
+          <>
+            <StatCard label={t('fleet')} value={stats?.fleet?.find((f: any) => f.status === 'Running')?.count || 0} sub="Total: 55 Units" icon={Truck} color="text-accent" trend="+4.2%" />
+            <StatCard label={t('total_production')} value={stats ? `${(stats.production / 1000).toFixed(1)}K` : "0"} sub="BCM this month" icon={TrendingUp} color="text-accent" trend="+12.5%" />
+            <StatCard label="Monthly OpEx" value={formatCurrency(1250000000)} sub="Operational Costs" icon={DollarSign} color="text-yellow-500" trend="Budget OK" isCurrency />
+            <StatCard label={t('efficiency')} value="92.4%" sub="Availability (MA)" icon={BarChart3} color="text-emerald-400" trend="+2.1%" />
+          </>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -131,9 +120,13 @@ export default function Dashboard() {
                  <div className="w-10 h-10 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
                     <BarChart3 size={20} />
                  </div>
-                 <h3 className="text-2xl font-black font-outfit text-white tracking-tight">Production Trajectory</h3>
+                 <h3 className="text-2xl font-black font-outfit text-white tracking-tight">
+                    {userRole === 'OPERATOR' ? "Personal Production" : userRole === 'TECHNICIAN' ? "Repair Velocity" : "Production Trajectory"}
+                 </h3>
               </div>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] ml-[52px]">Global site output statistics</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.2em] ml-[52px]">
+                 {userRole === 'OPERATOR' ? "Your output vs daily target" : userRole === 'TECHNICIAN' ? "Workshop job completion rate" : "Global site output statistics"}
+              </p>
             </div>
             
             <div className="flex gap-2 bg-white/5 p-1 rounded-xl border border-white/10">
@@ -178,20 +171,38 @@ export default function Dashboard() {
                <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center text-accent">
                   <Truck size={24} />
                </div>
-               <h3 className="text-2xl font-black font-outfit text-white tracking-tight">{t('fleet')} Pulse</h3>
+               <h3 className="text-2xl font-black font-outfit text-white tracking-tight">
+                  {userRole === 'OPERATOR' ? "Unit Health" : userRole === 'TECHNICIAN' ? "Resource Load" : t('fleet') + " Pulse"}
+               </h3>
             </div>
             
             <div className="space-y-8 relative z-10">
-              <FleetBar label="Excavators" current={stats?.fleetTypes?.find((f: any) => f.unit_type === 'Excavator')?.count || 0} total={10} color="bg-accent" />
-              <FleetBar label="Dump Trucks" current={stats?.fleetTypes?.find((f: any) => f.unit_type === 'Dump Truck')?.count || 0} total={30} color="bg-accent opacity-80" />
-              <FleetBar label="Service Units" current={stats?.fleetTypes?.find((f: any) => !['Excavator', 'Dump Truck'].includes(f.unit_type))?.count || 0} total={15} color="bg-accent opacity-60" />
+              {userRole === 'OPERATOR' ? (
+                <>
+                  <FleetBar label="Engine Status" current={98} total={100} color="bg-accent" />
+                  <FleetBar label="Fuel Level" current={65} total={100} color="bg-blue-400" />
+                  <FleetBar label="Tire Pressure" current={85} total={100} color="bg-emerald-400" />
+                </>
+              ) : userRole === 'TECHNICIAN' ? (
+                <>
+                  <FleetBar label="Workshop Bays" current={4} total={5} color="bg-accent" />
+                  <FleetBar label="Manpower" current={8} total={12} color="bg-blue-400" />
+                  <FleetBar label="Urgent Parts" current={2} total={10} color="bg-red-400" />
+                </>
+              ) : (
+                <>
+                  <FleetBar label="Excavators" current={stats?.fleetTypes?.find((f: any) => f.unit_type === 'Excavator')?.count || 0} total={10} color="bg-accent" />
+                  <FleetBar label="Dump Trucks" current={stats?.fleetTypes?.find((f: any) => f.unit_type === 'Dump Truck')?.count || 0} total={30} color="bg-accent opacity-80" />
+                  <FleetBar label="Service Units" current={stats?.fleetTypes?.find((f: any) => !['Excavator', 'Dump Truck'].includes(f.unit_type))?.count || 0} total={15} color="bg-accent opacity-60" />
+                </>
+              )}
             </div>
           </div>
           
           <div className="mt-4 pt-8 relative z-10">
-            <Link href="/maintenance" className="block w-full">
+            <Link href={userRole === 'TECHNICIAN' ? "/maintenance" : userRole === 'OPERATOR' ? "/dsr" : "/monitoring"} className="block w-full">
               <button className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 hover:border-accent/30 transition-all flex items-center justify-center gap-3 group">
-                <span>Workshop Status</span>
+                <span>{userRole === 'TECHNICIAN' ? "Workshop Detail" : userRole === 'OPERATOR' ? "View Shift Logs" : "Global Site Monitor"}</span>
                 <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </Link>
@@ -214,7 +225,7 @@ function StatCard({ label, value, sub, icon: Icon, color, trend, isCurrency }: a
         </div>
         <div className={clsx(
           "text-[10px] font-black px-2.5 py-1 rounded-lg border",
-          trend.includes('+') ? "bg-accent/10 text-accent border-accent/20" : "bg-white/5 text-slate-500 border-white/10"
+          trend?.includes('+') || trend?.includes('Safe') || trend?.includes('On Track') ? "bg-accent/10 text-accent border-accent/20" : "bg-white/5 text-slate-500 border-white/10"
         )}>
           {trend}
         </div>

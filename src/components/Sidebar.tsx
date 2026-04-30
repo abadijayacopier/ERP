@@ -88,21 +88,48 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* User Info & Role Badge */}
-      <div className="px-6 py-4 mx-4 rounded-2xl bg-white/5 border border-white/10 my-6 flex items-center gap-3">
-         <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-accent border border-accent/20">
-           <User size={18} />
+      {/* User Info & Role Badge with Emulation */}
+      <div className="px-6 py-4 mx-4 rounded-2xl bg-white/5 border border-white/10 my-6 flex flex-col gap-4">
+         <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-accent border border-accent/20">
+              <User size={18} />
+            </div>
+            <div className="flex flex-col overflow-hidden">
+              <span className="text-xs font-black text-white uppercase truncate">Administrator</span>
+              <span className={clsx(
+                "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md w-fit border mt-1",
+                userRole === 'ADMIN' ? "bg-accent/10 border-accent/20 text-accent" :
+                userRole === 'TECHNICIAN' ? "bg-green-500/10 border-green-500/20 text-green-500" :
+                userRole === 'OPERATOR' ? "bg-blue-500/10 border-blue-500/20 text-blue-400" :
+                "bg-purple-500/10 border-purple-500/20 text-purple-400"
+              )}>
+                {userRole} AUTHORITY
+              </span>
+            </div>
          </div>
-         <div className="flex flex-col overflow-hidden">
-           <span className="text-xs font-black text-white uppercase truncate">Administrator</span>
-           <span className={clsx(
-             "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md w-fit border mt-1",
-             userRole === 'ADMIN' ? "bg-accent/10 border-accent/20 text-accent" :
-             userRole === 'TECHNICIAN' ? "bg-green-500/10 border-green-500/20 text-green-500" :
-             "bg-blue-500/10 border-blue-500/20 text-blue-400"
-           )}>
-             {userRole} AUTHORITY
-           </span>
+         
+         <div className="pt-4 border-t border-white/5 flex flex-col gap-2">
+            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Emulate Role:</p>
+            <div className="flex gap-2">
+               {["ADMIN", "OPERATOR", "TECHNICIAN"].map((role) => (
+                 <button 
+                   key={role}
+                   onClick={() => {
+                     setUserRole(role);
+                     localStorage.setItem('mock_user_role', role);
+                     window.location.reload(); // Hard reload to reset all states
+                   }}
+                   className={clsx(
+                     "flex-1 py-1.5 rounded-lg text-[8px] font-black border transition-all",
+                     userRole === role 
+                      ? "bg-accent text-primary border-accent" 
+                      : "bg-white/5 text-slate-500 border-white/10 hover:text-white"
+                   )}
+                 >
+                   {role}
+                 </button>
+               ))}
+            </div>
          </div>
       </div>
 
