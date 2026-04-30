@@ -27,7 +27,8 @@ import {
   UserPlus,
   ChevronRight,
   ChevronLeft,
-  Database
+  Database,
+  RefreshCw
 } from "lucide-react";
 import { clsx } from "clsx";
 import { Modal, Toast } from "@/components/UIFeedback";
@@ -46,6 +47,10 @@ export default function SettingsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
+
+  // Audit Logs State
+  const [systemLogs, setSystemLogs] = useState<any[]>([]);
+  const [auditLoading, setAuditLoading] = useState(false);
   
   // Personnel Modal State
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -161,6 +166,7 @@ export default function SettingsPage() {
     { id: "Company", icon: Globe, label: "Company Profile" },
     { id: "Appearance", icon: Palette, label: t('theme') },
     { id: "Security", icon: ShieldCheck, label: "Security" },
+    { id: "Audit", icon: Activity, label: "Audit Logs" },
     { id: "Integrations", icon: Terminal, label: "Integrations" },
   ];
 
@@ -467,6 +473,73 @@ export default function SettingsPage() {
                      <div className="w-10 h-5 bg-accent/20 rounded-full relative p-1"><div className="w-3 h-3 bg-accent rounded-full translate-x-5"></div></div>
                    </div>
                 </IntegrationCard>
+             </div>
+          )}
+
+          {activeTab === "Audit" && (
+             <div className="space-y-8 animate-in slide-in-from-bottom-4">
+                <div className="flex justify-between items-center bg-white/5 border border-white/10 p-6 rounded-3xl">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-2xl bg-accent/20 text-accent"><Activity size={24} /></div>
+                    <h3 className="text-xl font-black font-outfit text-white">Digital Footprint</h3>
+                  </div>
+                  <button 
+                    onClick={async () => {
+                      setAuditLoading(true);
+                      const data = await apiRequest('logs');
+                      setSystemLogs(data);
+                      setAuditLoading(false);
+                    }}
+                    className="p-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all"
+                  >
+                    <RefreshCw size={18} className={auditLoading ? "animate-spin" : ""} />
+                  </button>
+                </div>
+
+                <div className="glass-card overflow-hidden">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-white/5 border-b border-white/5">
+                        <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Event</th>
+                        <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Identity</th>
+                        <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Telemetry</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {systemLogs.length === 0 ? (
+                        <tr><td colSpan={3} className="p-20 text-center text-slate-500 italic uppercase text-[10px] font-black tracking-widest">No audit trails detected</td></tr>
+                      ) : (
+                        systemLogs.map((log: any) => (
+                          <tr key={log.id} className="hover:bg-white/[0.02] group">
+                            <td className="p-6">
+                              <div className="flex flex-col">
+                                <span className="text-xs font-black text-white uppercase">{log.action}</span>
+                                <span className="text-[9px] font-bold text-slate-500 mt-1 uppercase tracking-widest">{log.module}</span>
+                              </div>
+                            </td>
+                            <td className="p-6">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent text-[10px] font-black">
+                                  {log.user_name?.substring(0, 2).toUpperCase()}
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-bold text-white">{log.user_name}</span>
+                                  <span className="text-[9px] font-black text-slate-500 font-mono">{log.ip_address || "LOCAL_HOST"}</span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-6 text-right">
+                              <div className="flex flex-col items-end">
+                                <span className="text-[10px] font-black text-white">{new Date(log.created_at).toLocaleString()}</span>
+                                <span className="text-[8px] font-bold text-slate-600 mt-1 truncate max-w-[200px] italic">UA: {log.user_agent || "Site Engine v1"}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
              </div>
           )}
 

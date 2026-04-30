@@ -38,28 +38,12 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { t } = useGlobalSettings();
-  const [settings, setSettings] = useState<any>(null);
+  const { t, companyInfo } = useGlobalSettings();
   const [userRole, setUserRole] = useState("ADMIN");
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const data = await apiRequest('settings');
-        if (data && data.company_name) {
-          setSettings(data);
-        }
-      } catch (err) {
-        console.warn("Failed to fetch sidebar settings");
-      }
-    };
-    fetchSettings();
-    
     const savedRole = localStorage.getItem('mock_user_role');
     if (savedRole) setUserRole(savedRole);
-
-    window.addEventListener('settingsUpdated', fetchSettings);
-    return () => window.removeEventListener('settingsUpdated', fetchSettings);
   }, []);
 
   const filteredNavItems = navItems.filter(item => item.roles.includes(userRole));
@@ -71,8 +55,8 @@ export default function Sidebar() {
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl"></div>
         
         <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center text-primary shadow-lg shadow-accent/20 relative z-10 overflow-hidden border border-white/10">
-          {settings?.logo_url ? (
-            <img src={settings.logo_url} alt="Logo" className="w-full h-full object-cover" />
+          {companyInfo?.logo ? (
+            <img src={companyInfo.logo} alt="Logo" className="w-full h-full object-cover" />
           ) : (
             <Mountain size={26} />
           )}
@@ -80,10 +64,10 @@ export default function Sidebar() {
 
         <div className="flex flex-col relative z-10 flex-1 overflow-hidden">
           <span className="font-outfit font-black text-lg tracking-tight text-white leading-none truncate uppercase">
-            {settings?.company_name?.split(' ')[0] || "MINE"}<span className="text-accent">{settings?.company_name?.split(' ')[1] || "ERP"}</span>
+            {companyInfo?.name?.split(' ')[0] || "MINE"}<span className="text-accent">{companyInfo?.name?.split(' ')[1] || "ERP"}</span>
           </span>
           <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1 truncate">
-            {settings?.company_name?.split(' ').slice(2).join(' ') || "Contractor Pro"}
+            {companyInfo?.name?.split(' ').slice(2).join(' ') || "Contractor Pro"}
           </span>
         </div>
       </div>

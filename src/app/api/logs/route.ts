@@ -15,9 +15,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { user_name, action, module, details } = await request.json();
+    const ip = request.headers.get('x-forwarded-for') || '127.0.0.1';
+    const ua = request.headers.get('user-agent') || 'Unknown';
+
     const result = await query(
-      'INSERT INTO activity_logs (user_name, action, module, details) VALUES (?, ?, ?, ?)',
-      [user_name, action, module, details]
+      'INSERT INTO activity_logs (user_name, action, module, details, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?)',
+      [user_name, action, module, details, ip, ua]
     );
     return NextResponse.json({ id: (result as any).insertId });
   } catch (error: any) {
