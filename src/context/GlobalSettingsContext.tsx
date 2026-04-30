@@ -35,6 +35,7 @@ const GlobalSettingsContext = createContext<GlobalSettingsContextType | undefine
 const translations: Record<Language, Record<string, string>> = {
   id: {
     dashboard: "Dasbor Eksekutif",
+    monitoring: "Monitoring KPI",
     fleet: "Monitoring Armada",
     maintenance: "Pemeliharaan & Perbaikan",
     inventory: "Sistem Inventaris",
@@ -94,6 +95,7 @@ const translations: Record<Language, Record<string, string>> = {
   },
   en: {
     dashboard: "Executive Dashboard",
+    monitoring: "KPI Monitoring",
     fleet: "Fleet Monitoring",
     maintenance: "Maintenance & Repair",
     inventory: "Inventory System",

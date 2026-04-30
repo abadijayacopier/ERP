@@ -16,7 +16,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  User
+  User,
+  BarChart3
 } from "lucide-react";
 import { clsx } from "clsx";
 import { apiRequest } from "@/lib/api-client";
@@ -25,6 +26,7 @@ import { useGlobalSettings } from "@/context/GlobalSettingsContext";
 // Define menu items with required roles and translation keys
 const navItems = [
   { label: "Executive Dashboard", tKey: "dashboard", href: "/", icon: LayoutDashboard, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
+  { label: "KPI Monitoring", tKey: "monitoring", href: "/monitoring", icon: BarChart3, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
   { label: "Fleet Monitoring", tKey: "fleet", href: "/fleet", icon: Truck, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
   { label: "Maintenance & Repair", tKey: "maintenance", href: "/maintenance", icon: Wrench, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "TECHNICIAN", "HSE"] },
   { label: "Inventory System", tKey: "inventory", href: "/inventory", icon: Database, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "TECHNICIAN"] },
