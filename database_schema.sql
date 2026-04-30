@@ -29,6 +29,18 @@ CREATE TABLE fleet_status (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Users / Personnel Table
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    role ENUM('ADMIN', 'EXECUTIVE', 'MECHANIC', 'TECHNICIAN', 'OPERATOR', 'HSE') DEFAULT 'TECHNICIAN',
+    department VARCHAR(100),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Company Settings
 DROP TABLE IF EXISTS company_settings;
 CREATE TABLE company_settings (
@@ -37,11 +49,9 @@ CREATE TABLE company_settings (
     address TEXT,
     phone VARCHAR(50),
     email VARCHAR(100),
+    website VARCHAR(100),
     npwp VARCHAR(50),
     logo_url VARCHAR(255),
-    wa_api_key VARCHAR(255),
-    telegram_bot_token VARCHAR(255),
-    telegram_chat_id VARCHAR(100),
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
