@@ -44,7 +44,7 @@ const MetricCard = ({ title, value, unit, icon: Icon, color }: any) => (
 );
 
 export default function MonitoringPage() {
-  const { t } = useGlobalSettings();
+  const { t, companyInfo } = useGlobalSettings();
   const [loading, setLoading] = useState(true);
   const [activeView, setActiveView] = useState("Summary");
   const [data, setData] = useState<any>(null);
@@ -114,15 +114,19 @@ export default function MonitoringPage() {
   return (
     <div className="min-h-screen p-8 bg-[#0b0f1a] relative">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-10 h-10 bg-accent/20 rounded-xl flex items-center justify-center text-accent">
-              <BarChart3 size={24} />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
+        <div className="flex-1">
+          <div className="flex items-center gap-5 mb-3">
+            <div className="w-14 h-14 bg-accent rounded-2xl flex items-center justify-center text-primary shadow-xl shadow-accent/20 border border-white/10 shrink-0">
+              <BarChart3 size={32} />
             </div>
-            <h1 className="text-4xl font-black text-white font-outfit tracking-tight uppercase">KPI SYSTEM MONITORING</h1>
+            <div className="flex flex-col">
+              <h1 className="text-4xl font-black text-white font-outfit uppercase tracking-tighter leading-none">
+                {companyInfo.name} <span className="text-accent">KPI MONITORING</span>
+              </h1>
+              <p className="text-slate-500 font-bold text-xs uppercase tracking-[0.3em] mt-2">Operational Performance & Reliability Intelligence</p>
+            </div>
           </div>
-          <p className="text-slate-400 font-medium">Mine Operational Performance & Equipment Availability Control</p>
         </div>
         
         <div className="flex items-center gap-4 bg-white/5 p-2 rounded-2xl border border-white/10">
