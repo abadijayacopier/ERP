@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { successResponse, errorResponse } from '@/lib/api-response';
 import { query } from '@/lib/db';
 
 export async function GET() {
@@ -6,9 +6,9 @@ export async function GET() {
     const logs = await query(
       'SELECT * FROM activity_logs ORDER BY created_at DESC LIMIT 50'
     );
-    return NextResponse.json(logs);
+    return successResponse(logs);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return errorResponse(error.message);
   }
 }
 
@@ -22,8 +22,8 @@ export async function POST(request: Request) {
       'INSERT INTO activity_logs (user_name, action, module, details, ip_address, user_agent) VALUES (?, ?, ?, ?, ?, ?)',
       [user_name, action, module, details, ip, ua]
     );
-    return NextResponse.json({ id: (result as any).insertId });
+    return successResponse({ id: (result as any).insertId }, 'Log created successfully', 201);
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return errorResponse(error.message);
   }
 }

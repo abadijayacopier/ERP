@@ -89,6 +89,24 @@ export default function SettingsPage() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (activeTab === "Audit") {
+      fetchLogs();
+    }
+  }, [activeTab]);
+
+  const fetchLogs = async () => {
+    try {
+      setAuditLoading(true);
+      const data = await apiRequest('logs');
+      if (data) setSystemLogs(data);
+    } catch (err) {
+      console.error("Failed to fetch logs");
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
   const fetchUsers = async () => {
     try {
       const data = await apiRequest('users');
@@ -484,12 +502,7 @@ export default function SettingsPage() {
                     <h3 className="text-xl font-black font-outfit text-white">Digital Footprint</h3>
                   </div>
                   <button 
-                    onClick={async () => {
-                      setAuditLoading(true);
-                      const data = await apiRequest('logs');
-                      setSystemLogs(data);
-                      setAuditLoading(false);
-                    }}
+                    onClick={fetchLogs}
                     className="p-3 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white transition-all"
                   >
                     <RefreshCw size={18} className={auditLoading ? "animate-spin" : ""} />

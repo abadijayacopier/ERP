@@ -22,31 +22,31 @@ import {
 import { clsx } from "clsx";
 import { apiRequest } from "@/lib/api-client";
 import { useGlobalSettings } from "@/context/GlobalSettingsContext";
+import { useAuth } from "@/context/AuthContext";
 
 // Define menu items with required roles and translation keys
 const navItems = [
   { label: "Executive Dashboard", tKey: "dashboard", href: "/", icon: LayoutDashboard, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
   { label: "KPI Monitoring", tKey: "monitoring", href: "/monitoring", icon: BarChart3, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
-  { label: "Fleet Monitoring", tKey: "fleet", href: "/fleet", icon: Truck, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
-  { label: "Maintenance & Repair", tKey: "maintenance", href: "/maintenance", icon: Wrench, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "TECHNICIAN", "HSE"] },
+  { label: "Fleet Monitoring", tKey: "fleet", href: "/fleet", icon: Truck, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "OPERATOR"] },
+  { label: "Maintenance & Repair", tKey: "maintenance", href: "/maintenance", icon: Wrench, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "TECHNICIAN", "HSE", "OPERATOR"] },
   { label: "Inventory System", tKey: "inventory", href: "/inventory", icon: Database, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "TECHNICIAN"] },
   { label: "Invoices & Billing", tKey: "invoices", href: "/invoices", icon: ReceiptText, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
-  { label: "Shift Reports (DSR)", tKey: "dsr", href: "/dsr", icon: FileText, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "HSE"] },
-  { label: "Fuel & Logistics", tKey: "logistics", href: "/logistics", icon: Fuel, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
-  { label: "Safety & HSE", tKey: "safety", href: "/safety", icon: ShieldAlert, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "HSE", "TECHNICIAN"] },
+  { label: "Shift Reports (DSR)", tKey: "dsr", href: "/dsr", icon: FileText, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "HSE", "OPERATOR"] },
+  { label: "Fuel & Logistics", tKey: "logistics", href: "/logistics", icon: Fuel, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "OPERATOR"] },
+  { label: "Safety & HSE", tKey: "safety", href: "/safety", icon: ShieldAlert, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "HSE", "TECHNICIAN", "OPERATOR"] },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { t, companyInfo } = useGlobalSettings();
-  const [userRole, setUserRole] = useState("ADMIN");
-
-  useEffect(() => {
-    const savedRole = localStorage.getItem('mock_user_role');
-    if (savedRole) setUserRole(savedRole);
-  }, []);
+  const { user, loading, logout } = useAuth();
+  
+  const userRole = user?.role || "GUEST";
 
   const filteredNavItems = navItems.filter(item => item.roles.includes(userRole));
+
+  if (loading) return null; // Or a skeleton sidebar
 
   return (
     <aside className="w-[280px] flex flex-col fixed h-[calc(100vh-2rem)] z-50 m-4 rounded-3xl border border-white/10 glass-card overflow-hidden shadow-2xl transition-all duration-500">
@@ -72,14 +72,16 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* User Info & Role Badge with Emulation */}
+      {/* User Info & Role Badge */}
       <div className="px-6 py-4 mx-4 rounded-2xl bg-white/5 border border-white/10 my-6 flex flex-col gap-4">
          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-accent border border-accent/20">
+            <div className="w-10 h-10 rounded-xl bg-accent/20 flex items-center justify-center text-accent border border-accent/20 shrink-0">
               <User size={18} />
             </div>
             <div className="flex flex-col overflow-hidden">
-              <span className="text-xs font-black text-white uppercase truncate">Administrator</span>
+              <span className="text-xs font-black text-white uppercase truncate" title={user?.full_name || "Guest"}>
+                {user?.full_name || "Guest"}
+              </span>
               <span className={clsx(
                 "text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md w-fit border mt-1",
                 userRole === 'ADMIN' ? "bg-accent/10 border-accent/20 text-accent" :
@@ -89,30 +91,6 @@ export default function Sidebar() {
               )}>
                 {userRole} AUTHORITY
               </span>
-            </div>
-         </div>
-         
-         <div className="pt-4 border-t border-white/5 flex flex-col gap-2">
-            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Emulate Role:</p>
-            <div className="flex gap-2">
-               {["ADMIN", "OPERATOR", "TECHNICIAN"].map((role) => (
-                 <button 
-                   key={role}
-                   onClick={() => {
-                     setUserRole(role);
-                     localStorage.setItem('mock_user_role', role);
-                     window.location.reload(); // Hard reload to reset all states
-                   }}
-                   className={clsx(
-                     "flex-1 py-1.5 rounded-lg text-[8px] font-black border transition-all",
-                     userRole === role 
-                      ? "bg-accent text-primary border-accent" 
-                      : "bg-white/5 text-slate-500 border-white/10 hover:text-white"
-                   )}
-                 >
-                   {role}
-                 </button>
-               ))}
             </div>
          </div>
       </div>
@@ -148,7 +126,7 @@ export default function Sidebar() {
 
       {/* Footer Section */}
       <div className="p-4 bg-white/5 border-t border-white/10 space-y-2">
-        {(userRole === 'ADMIN' || userRole === 'EXECUTIVE') && (
+        {(userRole === 'ADMIN' || userRole === 'EXECUTIVE' || userRole === 'MANAGER') && (
           <Link 
             href="/settings"
             className={clsx(
@@ -163,7 +141,10 @@ export default function Sidebar() {
           </Link>
         )}
         
-        <div className="p-4 bg-rose-500/5 rounded-2xl border border-red-500/10 flex items-center justify-between group cursor-pointer hover:bg-red-500/10 transition-all active:scale-95">
+        <div 
+          onClick={logout}
+          className="p-4 bg-rose-500/5 rounded-2xl border border-red-500/10 flex items-center justify-between group cursor-pointer hover:bg-red-500/10 transition-all active:scale-95"
+        >
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center text-red-500 group-hover:rotate-12 transition-transform">
               <LogOut size={18} />

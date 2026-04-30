@@ -154,3 +154,85 @@ body {
     animation: shimmer 2s infinite;
   }
 }
+
+/* PROFESSIONAL PRINT SYSTEM */
+@media print {
+  /* Hide non-essential UI elements */
+  aside, 
+  header, 
+  footer, 
+  .no-print,
+  button,
+  .mesh-bg,
+  [role="button"],
+  .pagination-controls {
+    display: none !important;
+  }
+
+  /* Reset layout for full-page print */
+  main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 10pt !important;
+  }
+
+  /* Enhance Table for Paper Documentation */
+  .glass-card {
+    background: transparent !important;
+    border: 1px solid #eee !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-top: 20px !important;
+  }
+
+  th {
+    background-color: #f8fafc !important;
+    color: #000 !important;
+    border-bottom: 2px solid #000 !important;
+    text-transform: uppercase !important;
+    font-size: 8pt !important;
+  }
+
+  td {
+    border-bottom: 1px solid #eee !important;
+    color: #000 !important;
+    padding: 10px !important;
+  }
+
+  /* Force light text to dark for readability */
+  .text-white, .text-slate-400, .text-slate-500 {
+    color: black !important;
+  }
+
+  .text-accent {
+    color: #2563eb !important;
+    font-weight: bold !important;
+  }
+
+  /* Keep brand colors but make them printer-friendly */
+  .bg-red-500 { background-color: #fee2e2 !important; color: #991b1b !important; border: 1px solid #f87171 !important; }
+  .bg-green-500 { background-color: #dcfce7 !important; color: #166534 !important; border: 1px solid #4ade80 !important; }
+  
+  /* Ensure logo and header remain but clean */
+  .print-header {
+    display: block !important;
+    border-bottom: 4px solid #000;
+    margin-bottom: 30px;
+    padding-bottom: 10px;
+  }
+}
+
