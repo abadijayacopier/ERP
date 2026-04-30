@@ -47,11 +47,15 @@ export async function GET() {
       WHERE fs.status = 'Breakdown'
     `);
 
-    // 4. Fetch Hierarchy (Point 10) - Now Component/Problem Hierarchy
+    // 4. Fetch Dynamic Hierarchy (100% Synchronized with Real Fleet)
     const hierarchy: any = await query(`
-      SELECT component, component_section, sub_component, problem_description
-      FROM component_hierarchy
-      ORDER BY component, component_section, sub_component
+      SELECT 
+        unit_type as parent_group, 
+        model as sub_group, 
+        COUNT(*) as unit_count
+      FROM fleet_status
+      GROUP BY unit_type, model
+      ORDER BY parent_group, sub_group
     `);
 
     // 5. Fetch Mega Summary Fleet Data (Matching Excel Columns)

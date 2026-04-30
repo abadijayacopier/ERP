@@ -261,32 +261,17 @@ CREATE TABLE kpi_logs (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Component Hierarchy (Point 10) - Matches Excel "Hirarki" Tab
-DROP TABLE IF EXISTS component_hierarchy;
-CREATE TABLE component_hierarchy (
+-- Unit Hierarchy for grouping (Point 10)
+DROP TABLE IF EXISTS unit_hierarchy;
+CREATE TABLE unit_hierarchy (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    component VARCHAR(100),           -- e.g., "ENGINE SYSTEM"
-    component_section VARCHAR(100),   -- e.g., "Cylinder Head Group"
-    sub_component VARCHAR(100),       -- e.g., "Turbocharger"
-    problem_description TEXT,         -- e.g., "Engine overheat"
+    parent_group VARCHAR(100), -- e.g., "Heavy Equipment", "Support"
+    sub_group VARCHAR(100),    -- e.g., "Excavator", "Dump Truck"
+    model_name VARCHAR(100),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Sample Data for Hierarchy (From Excel Screenshot)
-INSERT INTO component_hierarchy (component, component_section, sub_component, problem_description) VALUES
-('ENGINE SYSTEM', 'Cylinder Head Group', 'Cyl. Head & Fitting Parts', 'Starting performance is poor - always takes times'),
-('ENGINE SYSTEM', 'Cylinder Head Group', 'Rocker Arm, Housing & Cover', 'Starting deffective or badness - no start, no turn or no combustion'),
-('ENGINE SYSTEM', 'Cylinder Head Group', 'Cyl. Head & Fitting Parts', 'Engine does not pick up smoothly'),
-('ENGINE SYSTEM', 'Air intake & Exhaust system', 'Air Intake Manifold & After Cooler', 'Engine runs abnormally - speed too high, does not stop, hunting'),
-('ENGINE SYSTEM', 'Air intake & Exhaust system', 'Air Cleaner & Fitting Parts', 'Engine stall during operation'),
-('ENGINE SYSTEM', 'Air intake & Exhaust system', 'Turbocharger', 'Engine stop during operation'),
-('ENGINE SYSTEM', 'Air intake & Exhaust system', 'Exhaust Manifold & Muffler', 'Fuel level goes down / Fuel leak out'),
-('ENGINE SYSTEM', 'Cylinder Block Group', 'Cylinder Block & Liner', 'Engine lack of power (low power)'),
-('ENGINE SYSTEM', 'Cylinder Block Group', 'Block Covers', 'Exhaust gas is black'),
-('ENGINE SYSTEM', 'Cylinder Block Group', 'Piston & Connecting Rod', 'Oil in Cooling System'),
-('ENGINE SYSTEM', 'Lubricating Oil System', 'Oil Pump & Suction Pipe', 'Drop of oil pressure'),
-('HYDRAULIC SYSTEM', 'Main Pump System', 'Hydraulic Pump', 'Abnormal noise emitted');
-
+-- Sample Data for Hierarchy
 -- Daily HM Logs for precise calculation
 DROP TABLE IF EXISTS unit_daily_hm;
 CREATE TABLE unit_daily_hm (

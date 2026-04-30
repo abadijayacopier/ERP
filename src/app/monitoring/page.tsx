@@ -246,36 +246,26 @@ export default function MonitoringPage() {
            </div>
         </div>
       ) : activeView === "Hierarchy" ? (
-        <div className="glass-card p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-           <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-3">
-                <Layers className="text-[#facc15]" size={20} />
-                <h3 className="text-xl font-black text-white uppercase tracking-tight">Component Hierarchy Database</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in zoom-in duration-500">
+          {data?.hierarchy?.map((group: any, idx: number) => (
+            <div key={idx} className="glass-card p-8 group hover:border-accent/40 transition-all">
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-accent group-hover:bg-accent/10 transition-all">
+                  <Box size={24} />
+                </div>
+                <span className="px-3 py-1 rounded-full bg-white/5 text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  {group.unit_count} Units
+                </span>
               </div>
-           </div>
-
-           <div className="overflow-x-auto rounded-xl border border-white/10">
-             <table className="w-full text-left min-w-[800px] border-collapse bg-black/20">
-               <thead className="bg-[#facc15]">
-                 <tr>
-                   <th className="p-4 text-[10px] font-black text-black uppercase tracking-widest border-r border-black/10">Component</th>
-                   <th className="p-4 text-[10px] font-black text-black uppercase tracking-widest border-r border-black/10">Component Section</th>
-                   <th className="p-4 text-[10px] font-black text-black uppercase tracking-widest border-r border-black/10">Sub Component</th>
-                   <th className="p-4 text-[10px] font-black text-black uppercase tracking-widest">Description Problem</th>
-                 </tr>
-               </thead>
-               <tbody className="divide-y divide-white/5">
-                 {data?.hierarchy?.map((h: any, i: number) => (
-                   <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                     <td className="p-4 text-xs font-black text-[#facc15] border-r border-white/5 uppercase">{h.component}</td>
-                     <td className="p-4 text-xs font-bold text-white border-r border-white/5">{h.component_section}</td>
-                     <td className="p-4 text-xs text-slate-300 border-r border-white/5">{h.sub_component}</td>
-                     <td className="p-4 text-xs text-slate-400 italic">{h.problem_description}</td>
-                   </tr>
-                 ))}
-               </tbody>
-             </table>
-           </div>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{group.parent_group}</p>
+              <h3 className="text-2xl font-black text-white uppercase tracking-tight">{group.sub_group}</h3>
+              <div className="mt-6 pt-6 border-t border-white/5">
+                <button className="text-xs font-bold text-accent hover:underline flex items-center gap-2">
+                  VIEW GROUP DETAILS <ChevronDown size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       ) : null}
 
