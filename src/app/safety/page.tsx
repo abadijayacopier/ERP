@@ -111,21 +111,31 @@ export default function SafetyPage() {
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
       {showToast && <Toast message={showToast.msg} type={showToast.type} onClose={() => setShowToast(null)} />}
 
-      {/* PRINT-ONLY HEADER */}
-      <div className="hidden print:block border-b-4 border-black pb-6 mb-10">
-        <div className="flex justify-between items-end">
-          <div>
-            <h1 className="text-3xl font-black uppercase text-black tracking-tighter">Official HSE Incident Archive</h1>
-            <p className="text-sm font-bold text-slate-600 mt-1 uppercase tracking-widest">{companyInfo.name} • Operational Compliance Report</p>
+      {/* PRINT-ONLY HEADER — Clean Corporate Letterhead */}
+      <div className="hidden print:block mb-8">
+        <div className="border-b-2 border-black pb-4 mb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-xl font-black uppercase text-black tracking-tight">{companyInfo.name}</h1>
+              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-0.5">Health, Safety & Environment Division</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Document Classification</p>
+              <p className="text-xs font-black text-black uppercase mt-0.5">CONFIDENTIAL</p>
+            </div>
           </div>
-          <div className="text-right">
-            <p className="text-[10px] font-black uppercase text-slate-500">Document ID: HSE-{Date.now()}</p>
-            <p className="text-[10px] font-black uppercase text-slate-500">Generated: {new Date().toLocaleString()}</p>
+        </div>
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-black text-black uppercase tracking-tight">HSE Incident Archive Report</h2>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.3em] mt-1">Operational Compliance & Safety Performance Review</p>
+          <div className="flex justify-center gap-8 mt-3">
+            <p className="text-[9px] text-gray-400">Report Date: <span className="font-bold text-black">{new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span></p>
+            <p className="text-[9px] text-gray-400">Ref: <span className="font-bold text-black">HSE-{new Date().getFullYear()}-{String(new Date().getMonth()+1).padStart(2,'0')}</span></p>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-8">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-8 no-print">
         <div className="space-y-2">
            <div className="flex items-center gap-2">
             <div className="w-10 h-1 bg-red-500 rounded-full"></div>
@@ -155,15 +165,15 @@ export default function SafetyPage() {
         <HSECard label="Safety Meeting" value="100" sub="Attendance Rate" icon={Users} color="text-yellow-400" accent="bg-yellow-500" />
       </div>
 
-      <div className="glass-card overflow-hidden border-white/5 bg-white/[0.02] print:border-black/10 print:bg-white">
-        <div className="p-8 border-b border-white/5 bg-white/[0.03] flex flex-col md:flex-row justify-between items-center gap-6">
+      <div className="glass-card overflow-hidden border-white/5 bg-white/[0.02] print:border print:border-gray-200 print:bg-white print:rounded-none print:shadow-none">
+        <div className="p-8 border-b border-white/5 bg-white/[0.03] flex flex-col md:flex-row justify-between items-center gap-6 print:p-4 print:bg-gray-50 print:border-b print:border-gray-200">
            <div className="flex items-center gap-4">
-              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500">
-                 <FileWarning size={26} />
+              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 print:bg-transparent print:border-gray-300 print:text-black print:rounded-lg print:p-2">
+                 <FileWarning size={26} className="print:w-4 print:h-4" />
               </div>
               <div>
-                 <h3 className="font-black text-xl font-outfit text-white">Incident & Hazard Logs</h3>
-                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Real-time Safety Monitoring</p>
+                 <h3 className="font-black text-xl font-outfit text-white print:text-sm print:text-black">Incident & Hazard Logs</h3>
+                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1 print:text-[8px] print:text-gray-400">Real-time Safety Monitoring</p>
               </div>
            </div>
            <div className="relative w-full md:w-96 no-print">
@@ -182,62 +192,64 @@ export default function SafetyPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse print:text-[10px]">
             <thead>
-              <tr className="bg-white/5">
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">Type / Detail</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">Risk Level</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest">Reporter</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Timestamp</th>
-                <th className="px-8 py-5"></th>
+              <tr className="bg-white/5 print:bg-gray-100">
+                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest print:px-3 print:py-2 print:text-[8px] print:text-gray-600 print:border-b print:border-gray-300">Type / Detail</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest print:px-3 print:py-2 print:text-[8px] print:text-gray-600 print:border-b print:border-gray-300">Risk Level</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest print:px-3 print:py-2 print:text-[8px] print:text-gray-600 print:border-b print:border-gray-300">Reporter</th>
+                <th className="px-8 py-5 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right print:px-3 print:py-2 print:text-[8px] print:text-gray-600 print:border-b print:border-gray-300 print:text-left">Timestamp</th>
+                <th className="px-8 py-5 print:hidden"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-white/5 print:divide-gray-200">
               {loading ? (
                 <tr><td colSpan={5} className="p-20 text-center animate-pulse font-black text-slate-700 uppercase tracking-[0.4em] text-xs">Scanning Safety Vault...</td></tr>
               ) : paginatedIncidents.length === 0 ? (
                 <tr><td colSpan={5} className="p-20 text-center text-slate-500 font-black uppercase tracking-widest text-[10px]">No matches detected in archive</td></tr>
               ) : paginatedIncidents.map((log) => (
                 <tr key={log.id} className="group hover:bg-red-500/[0.02] transition-all">
-                  <td className="px-8 py-8">
-                    <div className="flex items-center gap-4">
+                  <td className="px-8 py-6 print:px-3 print:py-2">
+                    <div className="flex items-center gap-4 print:gap-2">
                        <div className={clsx(
-                         "w-12 h-12 rounded-2xl flex items-center justify-center border transition-all group-hover:scale-110",
-                         log.type === 'LTI' ? "bg-red-600/20 border-red-600/30 text-red-500" :
-                         log.type === 'Near Miss' ? "bg-amber-500/10 border-amber-500/20 text-amber-500" :
-                         "bg-blue-500/10 border-blue-500/20 text-blue-400"
+                         "w-11 h-11 rounded-2xl flex items-center justify-center border transition-all group-hover:scale-110 print:w-6 print:h-6 print:rounded print:border-gray-300",
+                         log.type === 'LTI' ? "bg-red-600/20 border-red-600/30 text-red-500 print:bg-red-50 print:text-red-600" :
+                         log.type === 'Near Miss' ? "bg-amber-500/10 border-amber-500/20 text-amber-500 print:bg-amber-50 print:text-amber-600" :
+                         log.type === 'Hazard Observation' ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 print:bg-yellow-50 print:text-yellow-600" :
+                         log.type === 'Property Damage' ? "bg-orange-500/10 border-orange-500/20 text-orange-500 print:bg-orange-50 print:text-orange-600" :
+                         "bg-blue-500/10 border-blue-500/20 text-blue-400 print:bg-blue-50 print:text-blue-600"
                        )}>
-                         <ShieldAlert size={20} />
+                         <ShieldAlert size={18} className="print:w-3 print:h-3" />
                        </div>
                        <div className="max-w-xs xl:max-w-md">
-                         <p className="text-sm font-black text-white group-hover:text-red-400 transition-colors truncate">{log.description}</p>
-                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mt-1">{log.location} • {log.type}</p>
+                         <p className="text-sm font-black text-white group-hover:text-red-400 transition-colors truncate print:text-[10px] print:font-bold print:text-black print:whitespace-normal">{log.description || log.type || '—'}</p>
+                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter mt-0.5 print:text-[8px] print:text-gray-400">{log.location || '—'} • {log.type || '—'}</p>
                        </div>
                     </div>
                   </td>
-                  <td className="px-8 py-8">
+                  <td className="px-8 py-6 print:px-3 print:py-2">
                     <span className={clsx(
-                      "px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-lg shadow-black/20",
-                      log.severity === 'High' || log.severity === 'Critical' ? "bg-red-500/10 border-red-500/30 text-red-500" :
-                      log.severity === 'Medium' ? "bg-amber-500/10 border-amber-500/30 text-amber-500" :
-                      "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                      "px-3 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border print:px-2 print:py-0.5 print:text-[7px] print:rounded print:border-gray-300",
+                      log.severity === 'High' || log.severity === 'Critical' ? "bg-red-500/10 border-red-500/30 text-red-500 print:bg-red-50 print:text-red-700 print:border-red-200" :
+                      log.severity === 'Medium' ? "bg-amber-500/10 border-amber-500/30 text-amber-500 print:bg-amber-50 print:text-amber-700 print:border-amber-200" :
+                      "bg-green-500/10 border-green-500/30 text-green-400 print:bg-green-50 print:text-green-700 print:border-green-200"
                     )}>
-                      {log.severity} RISK
+                      {log.severity || 'Low'} RISK
                     </span>
                   </td>
-                  <td className="px-8 py-8">
+                  <td className="px-8 py-6 print:px-3 print:py-2">
                     <div className="flex items-center gap-2">
-                       <div className="w-6 h-6 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-black text-[10px] text-slate-400">
-                          {log.user_name?.charAt(0)}
+                       <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center font-black text-[10px] text-slate-400 print:hidden">
+                          {(log.user_name || 'S').charAt(0).toUpperCase()}
                        </div>
-                       <span className="text-xs font-bold text-slate-400">{log.user_name}</span>
+                       <span className="text-xs font-bold text-slate-400 print:text-[10px] print:text-black">{log.user_name || '—'}</span>
                     </div>
                   </td>
-                  <td className="px-8 py-8 text-right">
-                    <div className="text-sm font-black text-white">{new Date(log.created_at).toLocaleDateString()}</div>
-                    <div className="text-[10px] font-bold text-slate-500 uppercase">{new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                  <td className="px-8 py-6 text-right print:px-3 print:py-2 print:text-left">
+                    <div className="text-sm font-black text-white print:text-[10px] print:text-black print:font-bold">{log.created_at ? new Date(log.created_at).toLocaleDateString() : '—'}</div>
+                    <div className="text-[10px] font-bold text-slate-500 uppercase print:text-[8px] print:text-gray-400">{log.created_at ? new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</div>
                   </td>
-                  <td className="px-8 py-8 text-right">
+                  <td className="px-8 py-6 text-right print:hidden">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
                        <button onClick={() => setViewingIncident(log)} className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all"><Eye size={16} /></button>
                        <button onClick={() => handlePrint(log)} className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-accent hover:bg-accent/10 transition-all"><Printer size={16} /></button>
@@ -250,7 +262,7 @@ export default function SafetyPage() {
         </div>
 
         {/* PAGINATION UI */}
-        <div className="p-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6 bg-white/[0.01]">
+        <div className="p-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-6 bg-white/[0.01] no-print">
           <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
             Record <span className="text-white">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="text-white">{Math.min(currentPage * itemsPerPage, filteredIncidents.length)}</span> of <span className="text-white">{filteredIncidents.length}</span> Safety Events
           </div>
@@ -295,37 +307,59 @@ export default function SafetyPage() {
       {/* Incident Details Modal */}
       <Modal isOpen={!!viewingIncident} onClose={() => setViewingIncident(null)} title="Incident Dossier Details">
         {viewingIncident && (
-          <div className="space-y-8 p-4">
-             <div className="flex justify-between items-start">
-                <div>
-                   <h2 className="text-2xl font-black font-outfit text-white tracking-tight">{viewingIncident.type}</h2>
-                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">{viewingIncident.location}</p>
+          <div className="space-y-6 p-2 animate-in fade-in zoom-in-95 duration-500">
+             {/* Header with Type + Severity */}
+             <div className="flex items-center justify-between p-5 bg-white/5 border border-white/10 rounded-2xl">
+                <div className="flex items-center gap-4">
+                   <div className={clsx(
+                     "w-14 h-14 rounded-2xl flex items-center justify-center border",
+                     viewingIncident.severity === 'High' || viewingIncident.severity === 'Critical' ? "bg-red-500/20 border-red-500/30 text-red-500" :
+                     viewingIncident.severity === 'Medium' ? "bg-amber-500/20 border-amber-500/30 text-amber-500" :
+                     "bg-green-500/20 border-green-500/30 text-green-400"
+                   )}>
+                     <ShieldAlert size={24} />
+                   </div>
+                   <div>
+                      <h2 className="text-xl font-black font-outfit text-white tracking-tight">{viewingIncident.type || 'Incident'}</h2>
+                      <div className="flex items-center gap-2 mt-1">
+                         <LifeBuoy size={12} className="text-slate-500" />
+                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{viewingIncident.location || 'Unknown Location'}</p>
+                      </div>
+                   </div>
                 </div>
                 <span className={clsx(
                   "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] border",
-                  viewingIncident.severity === 'High' || viewingIncident.severity === 'Critical' ? "bg-red-500/10 border-red-500/30 text-red-500" : "bg-blue-500/10 border-blue-500/30 text-blue-400"
+                  viewingIncident.severity === 'High' || viewingIncident.severity === 'Critical' ? "bg-red-500/10 border-red-500/30 text-red-500" :
+                  viewingIncident.severity === 'Medium' ? "bg-amber-500/10 border-amber-500/30 text-amber-500" :
+                  "bg-green-500/10 border-green-500/30 text-green-400"
                 )}>
-                  {viewingIncident.severity} RISK
+                  {viewingIncident.severity || 'Low'} RISK
                 </span>
              </div>
 
+             {/* Narrative */}
              <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4">Incident Narrative</p>
-                <p className="text-white text-sm leading-relaxed">{viewingIncident.description}</p>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Incident Narrative</p>
+                <p className="text-white text-sm leading-relaxed">{viewingIncident.description || 'No detailed narrative provided for this incident.'}</p>
              </div>
 
-             <div className="grid grid-cols-2 gap-4">
+             {/* Meta Grid */}
+             <div className="grid grid-cols-3 gap-3">
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
                    <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Reporter</p>
-                   <p className="text-sm font-bold text-white">{viewingIncident.user_name}</p>
+                   <p className="text-sm font-bold text-white">{viewingIncident.user_name || '—'}</p>
                 </div>
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
-                   <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Timestamp</p>
-                   <p className="text-sm font-bold text-white">{new Date(viewingIncident.created_at).toLocaleString()}</p>
+                   <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Date</p>
+                   <p className="text-sm font-bold text-white">{viewingIncident.created_at ? new Date(viewingIncident.created_at).toLocaleDateString() : '—'}</p>
+                </div>
+                <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
+                   <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-1">Time</p>
+                   <p className="text-sm font-bold text-white">{viewingIncident.created_at ? new Date(viewingIncident.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</p>
                 </div>
              </div>
 
-             <div className="pt-6 border-t border-white/5">
+             <div className="pt-4 border-t border-white/5">
                 <button onClick={() => setViewingIncident(null)} className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-slate-400 font-black text-xs hover:bg-white/10 transition-all uppercase tracking-widest">Close Dossier</button>
              </div>
           </div>
@@ -381,20 +415,20 @@ export default function SafetyPage() {
 
 function HSECard({ label, value, sub, icon: Icon, color, accent }: any) {
   return (
-    <div className="glass-card p-10 flex flex-col justify-between group hover:border-red-500/30 transition-all duration-700 relative overflow-hidden print:p-4 print:border-black/20 print:rounded-2xl print:min-h-0">
+    <div className="glass-card p-10 flex flex-col justify-between group hover:border-red-500/30 transition-all duration-700 relative overflow-hidden print:p-3 print:border print:border-gray-200 print:rounded-lg print:min-h-0 print:bg-white print:shadow-none">
       <div className={clsx("absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.08] transition-all group-hover:scale-125 print:hidden", color)}>
         <Icon size={160} />
       </div>
-      <div className={clsx("p-4 rounded-2xl bg-white/5 border border-white/10 w-fit group-hover:scale-110 transition-transform mb-8 shadow-2xl relative z-10 print:p-2 print:mb-2 print:border-black/10", color)}>
-        <Icon size={28} className="print:w-5 print:h-5" />
+      <div className={clsx("p-4 rounded-2xl bg-white/5 border border-white/10 w-fit group-hover:scale-110 transition-transform mb-8 shadow-2xl relative z-10 print:p-1.5 print:mb-2 print:border-gray-200 print:rounded-md print:shadow-none print:bg-gray-50", color)}>
+        <Icon size={28} className="print:w-4 print:h-4" />
       </div>
       <div className="relative z-10">
-        <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 print:mb-1 print:text-black">{label}</div>
+        <div className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-2 print:mb-0.5 print:text-[7px] print:text-gray-500">{label}</div>
         <div className="flex items-baseline gap-3">
-           <span className="text-5xl font-black text-white font-outfit tracking-tighter print:text-2xl print:text-black">{value}</span>
+           <span className="text-5xl font-black text-white font-outfit tracking-tighter print:text-xl print:text-black">{value}</span>
            <div className={clsx("w-2 h-2 rounded-full animate-pulse shadow-lg print:hidden", accent)}></div>
         </div>
-        <div className="text-[10px] font-bold text-slate-600 uppercase mt-2 tracking-tighter border-t border-white/5 pt-2 print:text-[8px] print:text-black print:border-black/10">{sub}</div>
+        <div className="text-[10px] font-bold text-slate-600 uppercase mt-2 tracking-tighter border-t border-white/5 pt-2 print:text-[7px] print:text-gray-400 print:border-gray-200 print:mt-1 print:pt-1">{sub}</div>
       </div>
     </div>
   );

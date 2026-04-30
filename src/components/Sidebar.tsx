@@ -17,7 +17,9 @@ import {
   LogOut,
   ChevronRight,
   User,
-  BarChart3
+  BarChart3,
+  Users,
+  ClipboardCheck
 } from "lucide-react";
 import { clsx } from "clsx";
 import { apiRequest } from "@/lib/api-client";
@@ -32,6 +34,9 @@ const navItems = [
   { label: "Maintenance & Repair", tKey: "maintenance", href: "/maintenance", icon: Wrench, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "TECHNICIAN", "HSE", "OPERATOR"] },
   { label: "Inventory System", tKey: "inventory", href: "/inventory", icon: Database, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "TECHNICIAN"] },
   { label: "Invoices & Billing", tKey: "invoices", href: "/invoices", icon: ReceiptText, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
+  { label: "HR & Employees", tKey: "hr", href: "/hr", icon: Users, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
+  { label: "Attendance & Shifts", tKey: "attendance", href: "/attendance", icon: ClipboardCheck, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "OPERATOR", "TECHNICIAN", "HSE"] },
+  { label: "Payroll & Slip Gaji", tKey: "payroll", href: "/payroll", icon: ReceiptText, roles: ["EXECUTIVE", "ADMIN", "MANAGER"] },
   { label: "Shift Reports (DSR)", tKey: "dsr", href: "/dsr", icon: FileText, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "HSE", "OPERATOR"] },
   { label: "Fuel & Logistics", tKey: "logistics", href: "/logistics", icon: Fuel, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "OPERATOR"] },
   { label: "Safety & HSE", tKey: "safety", href: "/safety", icon: ShieldAlert, roles: ["EXECUTIVE", "ADMIN", "MANAGER", "HSE", "TECHNICIAN", "OPERATOR"] },

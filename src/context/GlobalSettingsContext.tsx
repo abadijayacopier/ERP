@@ -91,7 +91,14 @@ const translations: Record<Language, Record<string, string>> = {
     fleet_health: "Kesehatan Armada",
     availability: "Ketersediaan (MA)",
     production_yield: "Hasil Produksi",
-    supervisor: "Pengawas Lapangan"
+    supervisor: "Pengawas Lapangan",
+    hr: "Karyawan & Personalia",
+    attendance: "Absensi & Shift",
+    payroll: "Slip Gaji & Payroll",
+    employee_management: "Manajemen Karyawan",
+    attendance_monitoring: "Monitoring Kehadiran",
+    payroll_system: "Sistem Penggajian",
+    active_employees: "Karyawan Aktif"
   },
   en: {
     dashboard: "Executive Dashboard",
@@ -151,7 +158,14 @@ const translations: Record<Language, Record<string, string>> = {
     fleet_health: "Fleet Health",
     availability: "Fleet Availability (MA)",
     production_yield: "Production Yield",
-    supervisor: "Site Supervisor"
+    supervisor: "Site Supervisor",
+    hr: "HR & Employees",
+    attendance: "Attendance & Shifts",
+    payroll: "Payroll & Payslips",
+    employee_management: "Employee Management",
+    attendance_monitoring: "Attendance Monitoring",
+    payroll_system: "Payroll System",
+    active_employees: "Active Employees"
   }
 };
 

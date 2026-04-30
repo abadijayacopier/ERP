@@ -47,22 +47,22 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="glass-card w-full max-w-xl shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh] relative overflow-hidden">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300 print:relative print:bg-white print:p-0 print:block print:z-0">
+      <div className="glass-card w-full max-w-xl shadow-[0_0_100px_rgba(0,0,0,0.8)] animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh] relative overflow-hidden print:max-h-none print:shadow-none print:border-none print:w-full print:max-w-none print:overflow-visible">
         {/* Modal Background Polish */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none no-print" />
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-accent/5 rounded-full blur-[100px] pointer-events-none no-print" />
         
-        <div className="p-8 border-b border-white/5 flex justify-between items-center relative z-10 bg-white/[0.02]">
+        <div className="p-8 border-b border-white/5 flex justify-between items-center relative z-10 bg-white/[0.02] print:hidden">
           <div className="flex flex-col">
             <h3 className="text-2xl font-black text-white font-outfit tracking-tight">{title}</h3>
             <div className="w-12 h-1 bg-accent rounded-full mt-1" />
           </div>
-          <button onClick={onClose} className="p-3 hover:bg-white/5 rounded-2xl text-slate-400 hover:text-white transition-all border border-transparent hover:border-white/10 group">
+          <button onClick={onClose} className="p-3 hover:bg-white/5 rounded-2xl text-slate-400 hover:text-white transition-all border border-transparent hover:border-white/10 group no-print">
             <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
           </button>
         </div>
-        <div className="p-6 overflow-y-auto flex-1">
+        <div className="p-6 overflow-y-auto flex-1 print:overflow-visible print:p-0">
           {children}
         </div>
       </div>
